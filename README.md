@@ -1,7 +1,4 @@
 # Task execution on the iTHOR simulator using automated planning and neural networks.
-
-## End of Degree Work by Hugo García Cuesta 100428954. University Carlos III of Madrid
-
 ### :page_with_curl: Description
 
 The main objective is to develop a program that allows the user to execute any action inside an iTHOR environment.
