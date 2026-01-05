@@ -120,11 +120,8 @@ COPY --from=builder /downloads/pretrained_models/ /app/Utils/pretrained_models/
 # Copy pre-downloaded ai2thor builds from builder stage
 COPY --from=builder /root/.ai2thor/ /root/.ai2thor/
 
-# Copy the pre-compiled FF planner binary (already Linux x86-64 in OGAMUS)
-RUN mkdir -p /app/planner/metric-ff /app/planner/metric-ff-macos \
-    && cp /app/OGAMUS/Plan/PDDL/Planners/FF/ff /app/planner/metric-ff/ff \
-    && cp /app/OGAMUS/Plan/PDDL/Planners/FF/ff /app/planner/metric-ff-macos/ff \
-    && chmod +x /app/planner/metric-ff/ff /app/planner/metric-ff-macos/ff
+# Ensure the pre-compiled FF planner binary is executable
+RUN chmod +x /app/OGAMUS/Plan/PDDL/Planners/FF/ff
 
 # Create required directories
 RUN mkdir -p images pddl/problems pddl/outputs Results
