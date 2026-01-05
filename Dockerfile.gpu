@@ -28,9 +28,9 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project --no-dev --python 3.12 --extra gpu
 
 # Download pretrained models
-WORKDIR /downloads
-RUN mkdir -p pretrained_models \
-    && uv run --python 3.12 gdown --folder "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR" -O pretrained_models/
+WORKDIR /app
+RUN mkdir -p /downloads/pretrained_models \
+    && uv run --python 3.12 gdown --folder "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR" -O /downloads/pretrained_models/
 
 # Pre-download ai2thor builds
 RUN uv run --python 3.12 python -c "\
