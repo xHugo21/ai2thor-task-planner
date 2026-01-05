@@ -8,6 +8,24 @@ FROM python:3.12-slim-bookworm AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Install build dependencies for the planner
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    flex \
+    bison \
+    git \
+    ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download and compile Metric-FF planner from mirror
+WORKDIR /build
+RUN git clone https://github.com/tranchis/metric-ff-macos.git Metric-FF \
+    && cd Metric-FF \
+    && make CFLAGS="-O6 -Wall -g -ansi -fcommon" \
+    && mkdir -p /app/bin \
+    && cp ff /app/bin/ff
+
 # Install gdown for Google Drive downloads and ai2thor for pre-download
 RUN pip install --no-cache-dir gdown ai2thor==4.2.0
 
@@ -84,8 +102,9 @@ COPY --from=builder /downloads/pretrained_models/ /app/Utils/pretrained_models/
 # Copy pre-downloaded ai2thor builds from builder stage
 COPY --from=builder /root/.ai2thor/ /root/.ai2thor/
 
-# Ensure the pre-compiled FF planner binary is executable
-RUN chmod +x /app/OGAMUS/Plan/PDDL/Planners/FF/ff
+# Copy the compiled FF planner binary from builder stage
+COPY --from=builder /app/bin/ff /usr/local/bin/ff
+RUN chmod +x /usr/local/bin/ff
 
 # Create required directories
 RUN mkdir -p images pddl/problems pddl/outputs Results

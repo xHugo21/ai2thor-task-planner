@@ -36,10 +36,10 @@ class Planner:
         """Method that executes cbp_roller using argument paths"""
         try:
             os.system(
-                f"./OGAMUS/Plan/PDDL/Planners/FF/ff -o {self.domain_path} -f {self.problem_path} > {self.output_path}"
+                f"ff -o {self.domain_path} -f {self.problem_path} > {self.output_path}"
             )
-        except FileNotFoundError:
-            raise Exception("Error executing planner: File not found\n")
+        except Exception as e:
+            raise Exception(f"Error executing planner: {e}\n")
 
     def print_plan(self):
         """Method that prints plan via CLI"""

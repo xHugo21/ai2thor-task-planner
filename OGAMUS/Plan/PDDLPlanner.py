@@ -12,7 +12,6 @@ from Utils import Logger
 
 
 class PDDLPlanner:
-
     def __init__(self):
         pass
 
@@ -25,7 +24,6 @@ class PDDLPlanner:
 
         return pddl_plan
 
-
     def FF(self):
         """
         Compute the plan using FastForward planner, the pddl file (i.e. "domain.pddl" and "facts.pddl") must be contained
@@ -36,7 +34,9 @@ class PDDLPlanner:
         # DEBUG
         start = datetime.datetime.now()
 
-        bash_command = "./OGAMUS/Plan/PDDL/Planners/FF/ff -o OGAMUS/Plan/PDDL/domain.pddl -f OGAMUS/Plan/PDDL/facts.pddl"
+        bash_command = (
+            "ff -o OGAMUS/Plan/PDDL/domain.pddl -f OGAMUS/Plan/PDDL/facts.pddl"
+        )
 
         process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
 
@@ -52,7 +52,9 @@ class PDDLPlanner:
             elif el.__contains__("unknown or empty type"):
                 return None
             elif el.__contains__("unknown constant"):
-                Logger.write('WARNING: unknown constant in pddl problem file. Cannot compute any plan.')
+                Logger.write(
+                    "WARNING: unknown constant in pddl problem file. Cannot compute any plan."
+                )
                 return None
 
         for i in range(len(result)):
@@ -60,10 +62,14 @@ class PDDLPlanner:
                 begin_index = i
 
             elif not result[i].find("time"):
-                end_index = i-2
+                end_index = i - 2
 
-        plan = [result[i].split(":")[1].replace("\\r", "") for i in range(begin_index, end_index)
-                if result[i].split(":")[1].replace("\\r", "").lower().strip() != 'reach-goal']
+        plan = [
+            result[i].split(":")[1].replace("\\r", "")
+            for i in range(begin_index, end_index)
+            if result[i].split(":")[1].replace("\\r", "").lower().strip()
+            != "reach-goal"
+        ]
         syntax_plan = []
 
         if len(plan) == 0:
@@ -78,7 +84,7 @@ class PDDLPlanner:
             tmp = re.sub("[ ]", ",", tmp.strip())
             tmp = tmp.replace(",", "(", 1)
             tmp = tmp + ")"
-            tmp = tmp[:tmp.index('(')].replace("-", "_") + tmp[tmp.index('('):]
+            tmp = tmp[: tmp.index("(")].replace("-", "_") + tmp[tmp.index("(") :]
             syntax_plan.append(tmp)
 
         return syntax_plan
