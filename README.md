@@ -9,65 +9,78 @@ There are two ways of running the program:
 
 2. Using OGAMUS algorithm. OGAMUS is an algorithm developed by Leonardo Lamanna, Luciano Serafini, Alessandro Saetti, Alfonso Gerevini y Paolo Traverso which scans an iTHOR scene using pretrained neural network models and stores all the data it gets inside PDDL problem files. In this project the algorithm has been modified so it can run within an specific environment and so that actions can be chained. There is also the possibility to pass a PDDL problem as argument and translate the actions that want to be executed.
 
-### :computer: iTHOR simulator requirements
+### :uv: Local Setup with uv
 
-1. Operative System: macOS 10.9 o Ubuntu 14.04+ (recommended: Ubuntu 22.04)
-2. Python: 3.5+
-3. CPU with SSE2 instruction support
-4. GPU: DX9 (shader model 3.0) or DX11 with feature level 9.3 capabilities
-5. Linux users need X server with GLX module enabled
+This project uses [uv](https://github.com/astral-sh/uv) for dependency management.
 
-### :white_check_mark: Step by step installation
+#### 1. Install uv
+Follow the [installation instructions](https://github.com/astral-sh/uv#installation) for your platform.
 
-1. Meet simulator requirements
+#### 2. Install dependencies
+Choose the version that matches your hardware:
 
-2. Clone repository into local folder
-   ```
-   git clone https://github.com/xHugo21/ai2thor-hugo.git
-   ```
-   ```
-   cd ai2thor-hugo
-   ```
-3. Install Anaconda / Miniconda (recommended) and run the following command to install dependencies
-   ```
-   conda env create -n ai2thor -f environment.yml
-   ```
-4. Activate the conda environment
+**For CPU:**
+```bash
+uv sync --extra cpu
+```
 
-   ```
-   conda activate ai2thor
-   ```
+**For GPU (NVIDIA):**
+```bash
+uv sync --extra gpu
+```
 
-5. Init and update the planner submodule
+#### 3. Metric-FF Planner
+The planner is included in the repository as a pre-compiled binary (`ff`). Ensure it has execution permissions:
+```bash
+chmod +x ff
+```
 
-   ```
-   git submodule init
-   ```
+#### 4. Run the program
+```bash
+uv run python main.py
+```
 
-   ```
-   git submodule update
-   ```
+### :whale: Running with Docker
 
-6. Compile the planner
+#### 1. Allow X11 connections
+To enable GUI visualization from the container:
+```bash
+xhost +local:docker
+```
 
-   ```
-   cd planner/metric-ff-macos/
-   ```
+#### 2. Build and Run
 
-   ```
-   make
-   ```
+**CPU version:**
+```bash
+docker build -t ai2thor-task-planner:cpu -f Dockerfile .
+docker run -it --rm \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+    ai2thor-task-planner:cpu
+```
 
-7. Download the pretrained neural network from the following link and drop the files into /Utils/pretrained_models/ [Pretrained Neural Network](https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR?usp=sharing)
+**GPU version (requires NVIDIA Docker):**
+```bash
+docker build -t ai2thor-task-planner:gpu -f Dockerfile.gpu .
+docker run -it --rm --gpus all \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+    ai2thor-task-planner:gpu
+```
 
-8. Execute main.py and follow steps in CLI
-   ```
-   python main.py
-   ```
-9. If the user wants, he can pass a PDDL problem file as argument so that there is no need to select actions and objectives via CLI. This is only allowed for the OGAMUS method. There is a PDDL input example file at /pddl/inputs/example.pddl
-   ```
-   python main.py ./pddl/inputs/example.pddl
-   ```
+#### 3. Persisting Output Files
+
+To save generated images, PDDL files, and results on your host machine, mount the corresponding volumes:
+```bash
+docker run -it --rm \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+    -v $(pwd)/images:/app/images \
+    -v $(pwd)/pddl/outputs:/app/pddl/outputs \
+    -v $(pwd)/pddl/problems:/app/pddl/problems \
+    -v $(pwd)/Results:/app/Results \
+    ai2thor-task-planner:cpu
+```
 
 ### :eyes: Results visualization
 
@@ -87,7 +100,7 @@ iTHOR simulator launches a visualization window every time an environment is gen
 
 - Plans generated in /pddl/outputs/
 
-### :dizzy: Recommended improvements
+### :dizzy: Recommended settings
 
 - Run the following command to prevent GNOME from launching the "Application not responds" window. This way the Unity window can be left more time without interruption before executing tasks
 
@@ -100,4 +113,3 @@ gsettings set org.gnome.mutter check-alive-timeout 60000
 - iTHOR documentation: https://ai2thor.allenai.org/ithor/documentation/
 - LAMANNA, Leonardo, et al. Online grounding of symbolic planning domains in unknown environments. En Proceedings of the International Conference on Principles of Knowledge Representation and Reasoning. 2022. p. 511-521. [PDF](https://arxiv.org/pdf/2112.10007.pdf). [GitHub](https://github.com/LamannaLeonardo/OGAMUS)
 - [Metric-FF](https://fai.cs.uni-saarland.de/hoffmann/metric-ff.html) planner
-- [tranchis](https://github.com/tranchis/metric-ff-macos) macos compilable version of [Metric-FF](https://fai.cs.uni-saarland.de/hoffmann/metric-ff.html)

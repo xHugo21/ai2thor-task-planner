@@ -1,0 +1,72 @@
+[project]
+name = "ai2thor-task-planner"
+version = "0.1.0"
+description = "Task execution on iTHOR simulator using PDDL planning and OGAMUS"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "ai2thor==4.2.0",
+    "aws-requests-auth>=0.4.3",
+    "botocore>=1.34.0",
+    "click>=8.1.0",
+    "flask>=3.0.0",
+    "gdown>=5.2.0",
+    "jinja2>=3.1.0",
+    "matplotlib>=3.8.0",
+    "msgpack>=1.0.0",
+    "networkx>=3.0",
+    "numpy>=1.26.0",
+    "opencv-python>=4.10.0",
+    "pillow>=10.4.0",
+    "progressbar2>=4.2.0",
+    "python-dateutil>=2.8.0",
+    "pyyaml>=6.0",
+    "requests>=2.31.0",
+    "scipy>=1.11.0",
+    "six>=1.16.0",
+    "sympy>=1.12",
+    "werkzeug>=3.0.0",
+]
+
+[project.optional-dependencies]
+cpu = [
+    "torch==2.5.1",
+    "torchvision==0.20.1",
+    "torchaudio==2.5.1",
+]
+gpu = [
+    "torch==2.5.1",
+    "torchvision==0.20.1",
+    "torchaudio==2.5.1",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-gpu"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[tool.uv]
+environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "sys_platform == 'win32' and platform_machine == 'amd64'",
+]
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cpu", marker = "extra == 'cpu'" },
+  { index = "pytorch-gpu", marker = "extra == 'gpu' and extra != 'cpu'" },
+]
+torchvision = [
+  { index = "pytorch-cpu", marker = "extra == 'cpu'" },
+  { index = "pytorch-gpu", marker = "extra == 'gpu' and extra != 'cpu'" },
+]
+torchaudio = [
+  { index = "pytorch-cpu", marker = "extra == 'cpu'" },
+  { index = "pytorch-gpu", marker = "extra == 'gpu' and extra != 'cpu'" },
+]

@@ -1,0 +1,124 @@
+# AI2THOR Task Planner - NVIDIA GPU Docker Image
+# Supports X11 forwarding for display output
+# Requires nvidia-docker runtime
+
+# =============================================================================
+# Stage 1: Download dependencies
+# =============================================================================
+FROM nvidia/cuda:12.4.1-devel-ubuntu22.04 AS builder
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Python 3.12 and build tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    python3.12 \
+    python3.12-dev \
+    ca-certificates \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install dependencies for pre-downloading
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project --no-dev --python 3.12 --extra gpu
+
+# Download pretrained models
+WORKDIR /app
+RUN mkdir -p /downloads/pretrained_models \
+    && uv run --python 3.12 gdown --folder "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR" -O /downloads/pretrained_models/
+
+# Pre-download ai2thor builds
+RUN uv run --python 3.12 python -c "\
+import os; \
+import ai2thor._builds; \
+from ai2thor.build import Build; \
+from ai2thor.platform import Linux64; \
+releases_dir = os.path.join(os.path.expanduser('~'), '.ai2thor', 'releases'); \
+os.makedirs(releases_dir, exist_ok=True); \
+b = Build(Linux64, ai2thor._builds.COMMIT_ID, False, releases_dir); \
+b.download(); \
+print('AI2THOR build downloaded to', b.base_dir)"
+
+# =============================================================================
+# Stage 2: Final runtime image
+# =============================================================================
+FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
+
+LABEL maintainer="AI2THOR Task Planner"
+LABEL description="Task execution on iTHOR simulator using PDDL planning and OGAMUS (GPU)"
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+# Install system dependencies including Python 3.12
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    python3.12 \
+    python3.12-venv \
+    # X11 and display
+    libx11-6 \
+    libxext6 \
+    libxrender1 \
+    libxtst6 \
+    libxi6 \
+    libxrandr2 \
+    libxcursor1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxinerama1 \
+    x11-utils \
+    # OpenGL and rendering
+    libgl1-mesa-glx \
+    libgl1-mesa-dri \
+    libegl1-mesa \
+    libglu1-mesa \
+    libvulkan1 \
+    mesa-vulkan-drivers \
+    # Audio (required by Unity)
+    libasound2 \
+    libpulse0 \
+    # Cleanup
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy uv files and sync
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project --no-dev --python 3.12 --extra gpu
+
+# Copy project files (including the 'ff' binary)
+COPY . .
+
+# Ensure 'ff' is executable
+RUN chmod +x ff
+
+# Copy pretrained models from builder stage
+COPY --from=builder /downloads/pretrained_models/ /app/Utils/pretrained_models/
+
+# Copy pre-downloaded ai2thor builds from builder stage
+COPY --from=builder /root/.ai2thor/ /root/.ai2thor/
+
+# Create required directories
+RUN mkdir -p images pddl/problems pddl/outputs Results
+
+# Set environment variables
+ENV DISPLAY=:0
+ENV QT_X11_NO_MITSHM=1
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute
+# Use the virtualenv created by uv
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Default command
+CMD ["python", "main.py"]
