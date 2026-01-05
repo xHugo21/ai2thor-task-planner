@@ -1,0 +1,54 @@
+# AI2THOR Task Planner - Docker Ignore
+
+# Git
+.git
+.gitignore
+.gitmodules
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info
+.eggs
+*.egg
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Generated files (will be recreated)
+images/
+pddl/outputs/
+pddl/problems/
+Results/
+
+# Pretrained models (downloaded during build)
+Utils/pretrained_models/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+!requirements*.txt
+
+# Logs
+*.log

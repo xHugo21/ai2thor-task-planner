@@ -1,0 +1,139 @@
+# AI2THOR Task Planner - NVIDIA GPU Docker Image
+# Supports X11 forwarding for display output
+# Requires nvidia-docker runtime
+
+# =============================================================================
+# Stage 1: Build/Download dependencies
+# =============================================================================
+FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Python 3.12 and build tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    python3.12 \
+    python3.12-venv \
+    python3.12-dev \
+    wget \
+    curl \
+    ca-certificates \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Set Python 3.12 as default and install pip
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
+    && python -m ensurepip --upgrade \
+    && python -m pip install --upgrade pip
+
+# Install gdown for Google Drive downloads
+RUN python -m pip install --no-cache-dir gdown
+
+# Download pretrained models
+WORKDIR /downloads
+RUN mkdir -p pretrained_models \
+    && gdown --folder "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR" -O pretrained_models/
+
+# Pre-download ai2thor builds (without X11 requirement)
+# Uses ai2thor's internal download mechanism with proper paths
+RUN python -m pip install --no-cache-dir --ignore-installed ai2thor==4.2.0 \
+    && python -c "\
+import os; \
+import ai2thor._builds; \
+from ai2thor.build import Build; \
+from ai2thor.platform import Linux64; \
+releases_dir = os.path.join(os.path.expanduser('~'), '.ai2thor', 'releases'); \
+os.makedirs(releases_dir, exist_ok=True); \
+b = Build(Linux64, ai2thor._builds.COMMIT_ID, False, releases_dir); \
+b.download(); \
+print('AI2THOR build downloaded to', b.base_dir)"
+
+# =============================================================================
+# Stage 2: Final runtime image
+# =============================================================================
+FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
+
+LABEL maintainer="AI2THOR Task Planner"
+LABEL description="Task execution on iTHOR simulator using PDDL planning and OGAMUS (GPU)"
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /app
+
+# Install system dependencies including Python 3.12
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    python3.12 \
+    python3.12-venv \
+    python3.12-dev \
+    # X11 and display
+    libx11-6 \
+    libxext6 \
+    libxrender1 \
+    libxtst6 \
+    libxi6 \
+    libxrandr2 \
+    libxcursor1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxinerama1 \
+    x11-utils \
+    # OpenGL and rendering
+    libgl1-mesa-glx \
+    libgl1-mesa-dri \
+    libegl1-mesa \
+    libglu1-mesa \
+    libvulkan1 \
+    mesa-vulkan-drivers \
+    # Audio (required by Unity)
+    libasound2 \
+    libpulse0 \
+    # Cleanup
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set Python 3.12 as default and install pip
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
+    && python -m ensurepip --upgrade \
+    && python -m pip install --upgrade pip
+
+# Copy requirements first for better caching
+COPY requirements-docker.txt .
+
+# Install Python dependencies with CUDA support
+RUN python -m pip install --no-cache-dir --ignore-installed \
+    torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 \
+    && python -m pip install --no-cache-dir --ignore-installed -r requirements-docker.txt
+
+# Copy project files
+COPY . .
+
+# Copy pretrained models from builder stage
+COPY --from=builder /downloads/pretrained_models/ /app/Utils/pretrained_models/
+
+# Copy pre-downloaded ai2thor builds from builder stage
+COPY --from=builder /root/.ai2thor/ /root/.ai2thor/
+
+# Copy the pre-compiled FF planner binary (already Linux x86-64 in OGAMUS)
+RUN mkdir -p /app/planner/metric-ff /app/planner/metric-ff-macos \
+    && cp /app/OGAMUS/Plan/PDDL/Planners/FF/ff /app/planner/metric-ff/ff \
+    && cp /app/OGAMUS/Plan/PDDL/Planners/FF/ff /app/planner/metric-ff-macos/ff \
+    && chmod +x /app/planner/metric-ff/ff /app/planner/metric-ff-macos/ff
+
+# Create required directories
+RUN mkdir -p images pddl/problems pddl/outputs Results
+
+# Set environment variables for X11 forwarding and NVIDIA
+ENV DISPLAY=:0
+ENV QT_X11_NO_MITSHM=1
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute
+
+# Default command
+CMD ["python", "main.py"]
