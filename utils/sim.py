@@ -1,9 +1,9 @@
 import os
 import shutil
-from utils.viz import extractCameraImage
+from utils.viz import extract_camera_image
 
 
-def printAgentStatus(event):
+def print_agent_status(event):
     """Shows general info and agent status"""
     print("-----------------------------------------------")
     print(f"sceneName: {event.metadata['sceneName']}")
@@ -15,16 +15,16 @@ def printAgentStatus(event):
     print("-----------------------------------------------\n")
 
 
-def isObjectOnScene(event, object_name):
+def is_object_on_scene(event, object_name):
     """Check if an object is on the scene. Useful for OGAMUS"""
     print("-----------------------------------------------")
     for obj in event.metadata["objects"]:
         if obj["name"].lower().find(object_name) != -1:
-            print(f"{object_name} existe en la escena")
+            print(f"{object_name} exists in the scene")
     print("-----------------------------------------------\n")
 
 
-def printObjectStatus(event, object_meta):
+def print_object_status(event, object_meta):
     """Shows full state of an object"""
     print("-----------------------------------------------")
     for obj in event.metadata["objects"]:
@@ -35,7 +35,7 @@ def printObjectStatus(event, object_meta):
     print("-----------------------------------------------\n")
 
 
-def printLastActionStatus(event):
+def print_last_action_status(event):
     """Shows info of the last action executed"""
     print("-----------------------------------------------")
     print(f"lastAction: {event.metadata['lastAction']}")
@@ -45,8 +45,8 @@ def printLastActionStatus(event):
     print("-----------------------------------------------\n")
 
 
-def createCamera(controller):
-    """Creates a camera and calls extractCameraImage() to save an image"""
+def create_camera(controller):
+    """Creates a camera and calls extract_camera_image() to save an image"""
     event = controller.step("Done")
     center = event.metadata["sceneBounds"]["center"]
     center["y"] = event.metadata["sceneBounds"]["cornerPoints"][0][1]
@@ -58,10 +58,10 @@ def createCamera(controller):
         rotation=dict(x=90, y=0, z=0),
         fieldOfView=110,
     )
-    extractCameraImage(event.third_party_camera_frames[0], "scene")
+    extract_camera_image(event.third_party_camera_frames[0], "scene")
 
 
-def removeResultFolders():
+def remove_result_folders():
     """Cleans and ensures existence of result folders mentioned below"""
     dirs = ["./pddl/problems/", "./pddl/outputs/", "./images/", "./Results/"]
 

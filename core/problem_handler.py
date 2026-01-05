@@ -57,10 +57,10 @@ class ProblemDefinition:
 
         return self.scene_number
 
-    def paths_selection(self, iteracion):
+    def paths_selection(self, iteration):
         """Method that specifies problem and output paths"""
-        self.problem_path = f"./pddl/problems/problem{iteracion}.pddl"
-        self.output_path = f"./pddl/outputs/problem{iteracion}.txt"
+        self.problem_path = f"./pddl/problems/problem{iteration}.pddl"
+        self.output_path = f"./pddl/outputs/problem{iteration}.txt"
 
         return self.problem_path, self.output_path
 

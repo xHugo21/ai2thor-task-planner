@@ -1,6 +1,6 @@
 # File that contains the class which translates plans into actions and executes them
 from ai2thor.controller import Controller
-from utils.viz import extractActionImage
+from utils.viz import extract_action_image
 
 
 class ParserPDDLAI2THOR:
@@ -51,7 +51,7 @@ class ParserPDDLAI2THOR:
     def parse_actions(self, iteration, liquid):
         """Method that identifies and executes each line of the plan. It also extracts images of the states"""
         # Extracts an image of the initial state
-        extractActionImage(self.controller.last_event, f"iter{iteration}_0")
+        extract_action_image(self.controller.last_event, f"iter{iteration}_0")
         n_image = 1
 
         # Find and execute the corresponding action
@@ -140,7 +140,9 @@ class ParserPDDLAI2THOR:
                 exit()
 
             # Extract image of the final state
-            extractActionImage(self.controller.last_event, f"iter{iteration}_{n_image}")
+            extract_action_image(
+                self.controller.last_event, f"iter{iteration}_{n_image}"
+            )
             n_image += 1
 
     def object_state_action(

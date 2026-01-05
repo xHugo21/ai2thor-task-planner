@@ -13,14 +13,14 @@ from core.parsers.pddl_ai2thor import ParserPDDLAI2THOR
 from core.planning.planner import Planner
 from core.dispatcher import ExecOgamus
 from utils.sim import (
-    printAgentStatus,
-    printLastActionStatus,
-    createCamera,
-    printObjectStatus,
-    removeResultFolders,
-    isObjectOnScene,
+    print_agent_status,
+    print_last_action_status,
+    create_camera,
+    print_object_status,
+    remove_result_folders,
+    is_object_on_scene,
 )
-from utils.viz import extractActionImage
+from utils.viz import extract_action_image
 
 # CONSTANTS
 DATASET = "Datasets/test_set_ogn_ithor.json"
@@ -29,7 +29,7 @@ LOG = "Results/test_set_ogn_ithor_steps200/episode_0/log.txt"
 # MAIN FLOW OF THE PROGRAM
 
 # We clean the results folder before executing
-removeResultFolders()
+remove_result_folders()
 
 # User selects the method he wants to use.
 # 1. METADATA: uses data extracted from the simulator to get object positions and applies a automated planning in order to find the best plan to make an action in the environment
@@ -69,7 +69,7 @@ if method == "1":
     )
 
     # We create a camera on top of the scene and save an image
-    createCamera(controller)
+    create_camera(controller)
 
     print("*ENVIRONMENT SUCCESSFULLY STARTED*\n")
 
@@ -105,11 +105,11 @@ if method == "1":
             parsed = ParserPDDLAI2THOR(plan.get_plan(), controller, iteration, liquid)
 
         # Final state visualization depending on the type of the problem
-        printLastActionStatus(controller.last_event)
+        print_last_action_status(controller.last_event)
         if problem == "move":
-            printAgentStatus(controller.last_event)
+            print_agent_status(controller.last_event)
         else:
-            printObjectStatus(controller.last_event, objective)
+            print_object_status(controller.last_event, objective)
 
         end_time = time.time()
 
@@ -143,7 +143,7 @@ else:
     )
 
     # We create a camera on top of the scene and save an image
-    createCamera(controller)
+    create_camera(controller)
 
     # We get initial positions of the agent to pass it to OGAMUS
     event = controller.step("Pass")
@@ -201,11 +201,9 @@ else:
             log_str = f.read()
             if log_str.find("200:Stop") != -1:
                 print(
-                    "No se ha encontrado el objetivo indicado tras recorrer la escena durante 200 pasos\n"
+                    "The specified objective has not been found after traversing the scene for 200 steps\n"
                 )
-                print(
-                    "Ejecute de nuevo el programa y pruebe con un objetivo distinto\n"
-                )
+                print("Run the program again and try with a different objective\n")
                 exit()
 
         # Call ExecOgamus to execute the action over the objective

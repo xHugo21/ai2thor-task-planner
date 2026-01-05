@@ -1,5 +1,5 @@
-from utils.sim import printObjectStatus, printLastActionStatus
-from utils.viz import extractActionImage
+from utils.sim import print_object_status, print_last_action_status
+from utils.viz import extract_action_image
 
 
 class ExecOgamus:
@@ -11,7 +11,7 @@ class ExecOgamus:
         self.objective = objective
 
         # An image is extracted with the current state
-        extractActionImage(self.controller.last_event, f"problem{iteration}_0")
+        extract_action_image(self.controller.last_event, f"problem{iteration}_0")
 
         # We call get_object_id() to get object id
         self.get_object_id()
@@ -99,12 +99,12 @@ class ExecOgamus:
             )
 
         # Show the object status via CLI
-        printObjectStatus(self.controller.last_event, self.final_objective)
-        printLastActionStatus(self.controller.last_event)
+        print_object_status(self.controller.last_event, self.final_objective)
+        print_last_action_status(self.controller.last_event)
 
         # Extract last state image
         self.controller.step("Pass")
-        extractActionImage(self.controller.last_event, f"problem{iteration}_1")
+        extract_action_image(self.controller.last_event, f"problem{iteration}_1")
 
     def get_object_id(self):
         """Method that extracts the object id corresponding to the object found in OGAMUS"""
