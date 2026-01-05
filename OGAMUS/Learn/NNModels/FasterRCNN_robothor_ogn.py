@@ -12,7 +12,7 @@ import torchvision
 from PIL import Image
 import numpy as np
 import matplotlib
-import Configuration
+from core import config as Configuration
 
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision import transforms

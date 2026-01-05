@@ -6,7 +6,7 @@
 
 import os
 import cv2
-import Configuration
+from core import config as Configuration
 from PIL import Image
 
 

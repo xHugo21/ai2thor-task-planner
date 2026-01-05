@@ -4,7 +4,7 @@
 # LICENSE file in the root directory of this source tree.
 
 
-import Configuration
+from core import config as Configuration
 from OGAMUS.Learn.NNModels.FasterRCNN import FasterRCNN
 
 

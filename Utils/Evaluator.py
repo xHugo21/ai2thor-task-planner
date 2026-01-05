@@ -9,7 +9,7 @@ import pickle
 import re
 from collections import defaultdict
 import numpy as np
-import Configuration
+from core import config as Configuration
 
 from Utils import Logger
 

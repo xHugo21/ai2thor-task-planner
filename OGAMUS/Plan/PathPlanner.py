@@ -12,7 +12,7 @@ import numpy as np
 
 from PIL import Image
 
-import Configuration
+from core import config as Configuration
 from Utils import Logger
 
 

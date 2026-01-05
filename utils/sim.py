@@ -1,8 +1,6 @@
-# Auxiliary functions
-# Imports
-from PIL import Image as im
 import os
 import shutil
+from utils.viz import extractCameraImage
 
 
 def printAgentStatus(event):
@@ -17,25 +15,22 @@ def printAgentStatus(event):
     print("-----------------------------------------------\n")
 
 
-def isObjectOnScene(event, object):
+def isObjectOnScene(event, object_name):
     """Check if an object is on the scene. Useful for OGAMUS"""
     print("-----------------------------------------------")
     for obj in event.metadata["objects"]:
-        if obj["name"].lower().find(object) != -1:
-            print(f"{object} existe en la escena")
+        if obj["name"].lower().find(object_name) != -1:
+            print(f"{object_name} existe en la escena")
     print("-----------------------------------------------\n")
 
 
-def printObjectStatus(event, object):
+def printObjectStatus(event, object_meta):
     """Shows full state of an object"""
     print("-----------------------------------------------")
     for obj in event.metadata["objects"]:
-        if obj["objectId"] == object["objectId"]:
+        if obj["objectId"] == object_meta["objectId"]:
             for key, value in obj.items():
-                if (
-                    key != "axisAlignedBoundingBox"
-                    and key != "objectOrientedBoundingBox"
-                ):
+                if key not in ["axisAlignedBoundingBox", "objectOrientedBoundingBox"]:
                     print(f"{key}: {value}")
     print("-----------------------------------------------\n")
 
@@ -48,12 +43,6 @@ def printLastActionStatus(event):
     if event.metadata["errorMessage"]:
         print(f"Error: {event.metadata['errorMessage']}")
     print("-----------------------------------------------\n")
-
-
-def extractActionImage(event, name):
-    """Extracts an image using event"""
-    data = im.fromarray(event.frame)
-    data.save("./images/" + name + ".png")
 
 
 def createCamera(controller):
@@ -72,27 +61,21 @@ def createCamera(controller):
     extractCameraImage(event.third_party_camera_frames[0], "scene")
 
 
-def extractCameraImage(nparray, name):
-    """Extracts an image using a nparray"""
-    data = im.fromarray(nparray)
-    data.save("./images/" + name + ".png")
-
-
 def removeResultFolders():
     """Cleans and ensures existence of result folders mentioned below"""
     dirs = ["./pddl/problems/", "./pddl/outputs/", "./images/", "./Results/"]
 
-    for dir in dirs:
-        if not os.path.exists(dir):
-            os.makedirs(dir, exist_ok=True)
+    for dir_path in dirs:
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path, exist_ok=True)
             continue
 
-        for filename in os.listdir(dir):
-            file_path = os.path.join(dir, filename)
+        for filename in os.listdir(dir_path):
+            file_path = os.path.join(dir_path, filename)
             try:
                 if os.path.isfile(file_path) or os.path.islink(file_path):
                     os.unlink(file_path)
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
             except Exception as e:
-                print("Failed to delete %s. Reason: %s" % (file_path, e))
+                print(f"Failed to delete {file_path}. Reason: {e}")

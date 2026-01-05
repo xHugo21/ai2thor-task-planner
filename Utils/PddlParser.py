@@ -12,7 +12,7 @@ from ai2thor.controller import Controller
 
 import numpy as np
 
-import Configuration
+from core import config as Configuration
 from Utils import Logger
 
 np.random.seed(Configuration.RANDOM_SEED)

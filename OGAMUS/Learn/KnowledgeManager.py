@@ -7,7 +7,7 @@
 import copy
 from collections import defaultdict
 
-import Configuration
+from core import config as Configuration
 from Utils import PddlParser
 import numpy as np
 

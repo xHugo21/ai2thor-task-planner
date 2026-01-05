@@ -7,7 +7,7 @@
 import copy
 from collections import defaultdict
 
-import Configuration
+from core import config as Configuration
 from OGAMUS.Learn.EnvironmentModels.AbstractModel import AbstractModel
 from OGAMUS.Learn.KnowledgeManager import KnowledgeManager
 from OGAMUS.Learn.Mapper import Mapper

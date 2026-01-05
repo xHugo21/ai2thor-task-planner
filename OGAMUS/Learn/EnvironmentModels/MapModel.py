@@ -5,7 +5,7 @@
 
 
 import matplotlib.pyplot as plt
-import Configuration
+from core import config as Configuration
 import numpy as np
 
 from PIL import Image

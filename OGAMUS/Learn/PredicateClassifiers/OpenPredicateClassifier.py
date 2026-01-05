@@ -10,7 +10,7 @@ import torch
 from PIL import Image
 from torchvision import transforms
 
-import Configuration
+from core import config as Configuration
 from OGAMUS.Learn.NNModels.OpenPredicateClassifierNN import OpenPredicateClassifierNN
 
 

@@ -9,7 +9,7 @@ import math
 import random
 import numpy as np
 
-import Configuration
+from core import config as Configuration
 from OGAMUS.Plan.PathPlanner import PathPlanner
 from OGAMUS.Plan.PDDLPlanner import PDDLPlanner
 from Utils import Logger

@@ -13,7 +13,7 @@ from collections import defaultdict
 import numpy as np
 from ai2thor.controller import Controller
 
-import Configuration
+from core import config as Configuration
 from OGAMUS.Learn.Learner import Learner
 from OGAMUS.Learn.EnvironmentModels.State import State
 from OGAMUS.Plan.EventPlanner import EventPlanner

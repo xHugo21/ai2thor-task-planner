@@ -1,7 +1,9 @@
 # File that parses iTHOR state to PDDL problem file
 
+
 class ParserAI2THORPDDL:
-    '''Class which contains all the methods needed to parse iTHOR state to PDDL problem file'''
+    """Class which contains all the methods needed to parse iTHOR state to PDDL problem file"""
+
     def __init__(self, event, problem_path, problem, objective, controller):
         self.event = event
         self.metadata = self.event.metadata
@@ -21,7 +23,7 @@ class ParserAI2THORPDDL:
         # Interactable poses added if problem needs to interact with an object
         else:
             self.parse_interactable_poses()
-        
+
         # Rest of goal conditions depending on type of problem
         if problem == "pickup":
             self.parse_general_problem("holding")
@@ -51,21 +53,33 @@ class ParserAI2THORPDDL:
             self.parse_general_problem("usedup")
         elif problem == "put":
             self.parse_put_problem()
-        
+
         # When problem has been parsed, write it to a PDDL file
         self.write_parsed_problem()
 
     def parse_general(self, problem):
-        '''Method that transforms general environment data into PDDL problem file'''
+        """Method that transforms general environment data into PDDL problem file"""
 
         # Agent data extraction
-        agent_location = self.metadata["agent"]["position"] # Initial agent position
-        positions = self.metadata["actionReturn"] # Reachable positions by agent. Return of action GetReachablePositions
-        agent_facing = self.metadata["agent"]["rotation"]["y"] # Agent orientation. Posible values: 0, 90, 180, 270. Depending on its value, MoveAhead moves in a specific direction
-        agent_inclination = self.metadata["agent"]["cameraHorizon"] # Vertical inclination of the agent. Possible values: 60, 30, 0, -30, -60
+        agent_location = self.metadata["agent"]["position"]  # Initial agent position
+        positions = self.metadata[
+            "actionReturn"
+        ]  # Reachable positions by agent. Return of action GetReachablePositions
+        agent_facing = self.metadata[
+            "agent"
+        ][
+            "rotation"
+        ][
+            "y"
+        ]  # Agent orientation. Posible values: 0, 90, 180, 270. Depending on its value, MoveAhead moves in a specific direction
+        agent_inclination = self.metadata["agent"][
+            "cameraHorizon"
+        ]  # Vertical inclination of the agent. Possible values: 60, 30, 0, -30, -60
 
         # Object data extraction
-        self.objects = self.metadata["objects"] # Contiene todos los objetos del entorno
+        self.objects = self.metadata[
+            "objects"
+        ]  # Contiene todos los objetos del entorno
 
         # CREATING PDDL FILE
         self.problem = "(define (problem problem1)\n"
@@ -77,9 +91,11 @@ class ParserAI2THORPDDL:
         for pos in positions:
             self.problem += f"\t\tpos{i} - position\n"
             i += 1
-        if self.objective.get('objectId') != None:
+        if self.objective.get("objectId") != None:
             for obj in self.objects:
-                if (obj['objectId'] == self.objective['objectId']) or (obj['isPickedUp']): 
+                if (obj["objectId"] == self.objective["objectId"]) or (
+                    obj["isPickedUp"]
+                ):
                     self.problem += f"\t\t{obj['name']} - object\n"
         self.problem += "\t)\n\n"
 
@@ -104,38 +120,57 @@ class ParserAI2THORPDDL:
             if obj["isPickedUp"]:
                 self.held_obj = obj
                 self.problem += f"\t\t(holding {obj['name']})\n\n"
-        
+
         self.problem += "\t)\n\n"
 
     def parse_move_problem(self):
-        '''Method that parses the goal of a move problem'''
+        """Method that parses the goal of a move problem"""
         self.problem += "\t(:goal (and\n"
-        self.problem += f"\t\t(= (agent-at-x) {self.objective['x']})"    
-        self.problem += f"\t\t(= (agent-at-z) {self.objective['z']})"    
+        self.problem += f"\t\t(= (agent-at-x) {self.objective['x']})"
+        self.problem += f"\t\t(= (agent-at-z) {self.objective['z']})"
         self.problem += "\t))\n"
         self.problem += ")\n"
 
     def parse_interactable_poses(self):
-        '''Method that parses interactable poses of the objective'''
+        """Method that parses interactable poses of the objective"""
 
-        # Add interactable poses. If there isn't any interactable poses, increase the horizons (agent inclinations)        
-        event2 = self.controller.step(action="GetInteractablePoses", objectId=self.objective["objectId"], standings=[True], horizons=[0])
+        # Add interactable poses. If there isn't any interactable poses, increase the horizons (agent inclinations)
+        event2 = self.controller.step(
+            action="GetInteractablePoses",
+            objectId=self.objective["objectId"],
+            standings=[True],
+            horizons=[0],
+        )
         interactable_poses = event2.metadata["actionReturn"]
-        print(f'Interactable poses: {interactable_poses}')
+        print(f"Interactable poses: {interactable_poses}")
         if not interactable_poses:
-            event2 = self.controller.step(action="GetInteractablePoses", objectId=self.objective["objectId"], standings=[True], horizons=[0, 30])
+            event2 = self.controller.step(
+                action="GetInteractablePoses",
+                objectId=self.objective["objectId"],
+                standings=[True],
+                horizons=[0, 30],
+            )
             interactable_poses = event2.metadata["actionReturn"]
-            print(f'Interactable poses: {interactable_poses}')
+            print(f"Interactable poses: {interactable_poses}")
             if not interactable_poses:
-                event2 = self.controller.step(action="GetInteractablePoses", objectId=self.objective["objectId"], standings=[True], horizons=[0, 30, 60])
+                event2 = self.controller.step(
+                    action="GetInteractablePoses",
+                    objectId=self.objective["objectId"],
+                    standings=[True],
+                    horizons=[0, 30, 60],
+                )
                 interactable_poses = event2.metadata["actionReturn"]
-                print(f'Interactable poses: {interactable_poses}')
+                print(f"Interactable poses: {interactable_poses}")
                 if not interactable_poses:
-                    event2 = self.controller.step(action="GetInteractablePoses", objectId=self.objective["objectId"], standings=[True])
+                    event2 = self.controller.step(
+                        action="GetInteractablePoses",
+                        objectId=self.objective["objectId"],
+                        standings=[True],
+                    )
                     interactable_poses = event2.metadata["actionReturn"]
                     if not interactable_poses:
-                        print("Error. El objeto no se encuentra accesible para el agente\n")
-                        print("Reinicie el programa e intente con otra acción\n")
+                        print("Error. The object is not accessible to the agent\n")
+                        print("Restart the program and try with another action\n")
                         exit()
 
         # Write interactable poses predicates
@@ -150,40 +185,42 @@ class ParserAI2THORPDDL:
                 i += 1
         start_index = self.problem.find("(:init\n")
         end_index = self.problem.find("\t\t(= (facing)")
-        self.problem = self.problem[:start_index+8] + subproblem + self.problem[end_index:]
+        self.problem = (
+            self.problem[: start_index + 8] + subproblem + self.problem[end_index:]
+        )
 
         # Add poses as objects
         subproblem = ""
-        for j in range (0, i):
+        for j in range(0, i):
             subproblem += f"\t\tpose{j} - position\n"
         start_index = self.problem.find("(:objects\n")
         end_index = self.problem.find("\t\tpos0")
-        self.problem = self.problem[:start_index+11] + subproblem + self.problem[end_index:]
+        self.problem = (
+            self.problem[: start_index + 11] + subproblem + self.problem[end_index:]
+        )
 
     def parse_general_problem(self, act):
-        '''Parse most of actions goal state'''
+        """Parse most of actions goal state"""
         self.problem += "\t(:goal (and\n"
-        self.problem += f"\t\t({act} {self.objective['name']})"    
+        self.problem += f"\t\t({act} {self.objective['name']})"
         self.problem += "\t))\n"
         self.problem += ")\n"
 
     # def parse_drop_problem(self):
     #     '''Parse drop problem goal state'''
     #     self.problem += "\t(:goal (and\n"
-    #     self.problem += f"\t\t(not (holding {self.objective['name']}))\n"    
+    #     self.problem += f"\t\t(not (holding {self.objective['name']}))\n"
     #     self.problem += "\t))\n"
     #     self.problem += ")\n"
 
     def parse_put_problem(self):
-        '''Parse put problem goal state'''
+        """Parse put problem goal state"""
         self.problem += "\t(:goal (and\n"
-        self.problem += f"\t\t(put {self.held_obj['name']} {self.objective['name']})\n"    
+        self.problem += f"\t\t(put {self.held_obj['name']} {self.objective['name']})\n"
         self.problem += "\t))\n"
         self.problem += ")\n"
 
     def write_parsed_problem(self):
-        '''Write full parsed problem into PDDL problem file located in problem_path'''
-        with open(self.problem_path, 'w') as f:
+        """Write full parsed problem into PDDL problem file located in problem_path"""
+        with open(self.problem_path, "w") as f:
             f.write(self.problem)
-
-

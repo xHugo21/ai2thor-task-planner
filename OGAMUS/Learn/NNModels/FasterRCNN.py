@@ -14,7 +14,7 @@ from PIL import Image
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision import transforms
 
-import Configuration
+from core import config as Configuration
 from Utils import Logger
 from Utils.torchvision_utils import draw_bounding_boxes
 
