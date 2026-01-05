@@ -3,55 +3,37 @@
 # Requires nvidia-docker runtime
 
 # =============================================================================
-# Stage 1: Build/Download dependencies
+# Stage 1: Download dependencies
 # =============================================================================
-FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04 AS builder
+FROM nvidia/cuda:12.4.1-devel-ubuntu22.04 AS builder
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install Python 3.12 and build tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common \
-    build-essential \
-    flex \
-    bison \
-    git \
     && add-apt-repository ppa:deadsnakes/ppa \
     && apt-get update && apt-get install -y --no-install-recommends \
     python3.12 \
-    python3.12-venv \
     python3.12-dev \
-    wget \
-    curl \
     ca-certificates \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Download and compile Metric-FF planner from mirror
-WORKDIR /build
-RUN git clone https://github.com/tranchis/metric-ff-macos.git Metric-FF \
-    && cd Metric-FF \
-    && make CFLAGS="-O6 -Wall -g -ansi -fcommon" \
-    && mkdir -p /app/bin \
-    && cp ff /app/bin/ff
-
-# Set Python 3.12 as default and install pip
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
-    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
-    && python -m ensurepip --upgrade \
-    && python -m pip install --upgrade pip
-
-# Install gdown for Google Drive downloads
-RUN python -m pip install --no-cache-dir gdown
+# Install dependencies for pre-downloading
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project --no-dev --python 3.12 --extra gpu
 
 # Download pretrained models
 WORKDIR /downloads
 RUN mkdir -p pretrained_models \
-    && gdown --folder "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR" -O pretrained_models/
+    && uv run --python 3.12 gdown --folder "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR" -O pretrained_models/
 
-# Pre-download ai2thor builds (without X11 requirement)
-# Uses ai2thor's internal download mechanism with proper paths
-RUN python -m pip install --no-cache-dir --ignore-installed ai2thor==4.2.0 \
-    && python -c "\
+# Pre-download ai2thor builds
+RUN uv run --python 3.12 python -c "\
 import os; \
 import ai2thor._builds; \
 from ai2thor.build import Build; \
@@ -72,6 +54,9 @@ LABEL description="Task execution on iTHOR simulator using PDDL planning and OGA
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 WORKDIR /app
 
 # Install system dependencies including Python 3.12
@@ -81,7 +66,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get update && apt-get install -y --no-install-recommends \
     python3.12 \
     python3.12-venv \
-    python3.12-dev \
     # X11 and display
     libx11-6 \
     libxext6 \
@@ -109,22 +93,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Set Python 3.12 as default and install pip
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
-    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
-    && python -m ensurepip --upgrade \
-    && python -m pip install --upgrade pip
+# Copy uv files and sync
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project --no-dev --python 3.12 --extra gpu
 
-# Copy requirements first for better caching
-COPY requirements-docker.txt .
-
-# Install Python dependencies with CUDA support
-RUN python -m pip install --no-cache-dir --ignore-installed \
-    torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 \
-    && python -m pip install --no-cache-dir --ignore-installed -r requirements-docker.txt
-
-# Copy project files
+# Copy project files (including the 'ff' binary)
 COPY . .
+
+# Ensure 'ff' is executable
+RUN chmod +x ff
 
 # Copy pretrained models from builder stage
 COPY --from=builder /downloads/pretrained_models/ /app/Utils/pretrained_models/
@@ -132,18 +109,16 @@ COPY --from=builder /downloads/pretrained_models/ /app/Utils/pretrained_models/
 # Copy pre-downloaded ai2thor builds from builder stage
 COPY --from=builder /root/.ai2thor/ /root/.ai2thor/
 
-# Copy the compiled FF planner binary from builder stage
-COPY --from=builder /app/bin/ff /usr/local/bin/ff
-RUN chmod +x /usr/local/bin/ff
-
 # Create required directories
 RUN mkdir -p images pddl/problems pddl/outputs Results
 
-# Set environment variables for X11 forwarding and NVIDIA
+# Set environment variables
 ENV DISPLAY=:0
 ENV QT_X11_NO_MITSHM=1
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute
+# Use the virtualenv created by uv
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Default command
 CMD ["python", "main.py"]

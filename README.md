@@ -9,6 +9,37 @@ There are two ways of running the program:
 
 2. Using OGAMUS algorithm. OGAMUS is an algorithm developed by Leonardo Lamanna, Luciano Serafini, Alessandro Saetti, Alfonso Gerevini y Paolo Traverso which scans an iTHOR scene using pretrained neural network models and stores all the data it gets inside PDDL problem files. In this project the algorithm has been modified so it can run within an specific environment and so that actions can be chained. There is also the possibility to pass a PDDL problem as argument and translate the actions that want to be executed.
 
+### :uv: Local Setup with uv
+
+This project uses [uv](https://github.com/astral-sh/uv) for dependency management.
+
+#### 1. Install uv
+Follow the [installation instructions](https://github.com/astral-sh/uv#installation) for your platform.
+
+#### 2. Install dependencies
+Choose the version that matches your hardware:
+
+**For CPU:**
+```bash
+uv sync --extra cpu
+```
+
+**For GPU (NVIDIA):**
+```bash
+uv sync --extra gpu
+```
+
+#### 3. Metric-FF Planner
+The planner is included in the repository as a pre-compiled binary (`ff`). Ensure it has execution permissions:
+```bash
+chmod +x ff
+```
+
+#### 4. Run the program
+```bash
+uv run python main.py
+```
+
 ### :whale: Running with Docker
 
 #### 1. Allow X11 connections

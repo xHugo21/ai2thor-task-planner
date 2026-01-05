@@ -2,40 +2,33 @@
 # Supports X11 forwarding for display output
 
 # =============================================================================
-# Stage 1: Build/Download dependencies
+# Stage 1: Download dependencies
 # =============================================================================
 FROM python:3.12-slim-bookworm AS builder
 
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install build dependencies for the planner
+# Install dependencies for downloading
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    flex \
-    bison \
-    git \
     ca-certificates \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and compile Metric-FF planner from mirror
-WORKDIR /build
-RUN git clone https://github.com/tranchis/metric-ff-macos.git Metric-FF \
-    && cd Metric-FF \
-    && make CFLAGS="-O6 -Wall -g -ansi -fcommon" \
-    && mkdir -p /app/bin \
-    && cp ff /app/bin/ff
-
-# Install gdown for Google Drive downloads and ai2thor for pre-download
-RUN pip install --no-cache-dir gdown ai2thor==4.2.0
+# Install dependencies for pre-downloading
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project --no-dev --extra cpu
 
 # Download pretrained models
 WORKDIR /downloads
 RUN mkdir -p pretrained_models \
-    && gdown --folder "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR" -O pretrained_models/
+    && uv run gdown --folder "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR" -O pretrained_models/
 
 # Pre-download ai2thor builds (without X11 requirement)
-RUN python -c "\
+RUN uv run python -c "\
 import os; \
 import ai2thor._builds; \
 from ai2thor.build import Build; \
@@ -55,6 +48,9 @@ LABEL maintainer="AI2THOR Task Planner"
 LABEL description="Task execution on iTHOR simulator using PDDL planning and OGAMUS"
 
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
@@ -87,15 +83,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
-COPY requirements-docker.txt .
+# Copy uv files and sync
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project --no-dev --extra cpu
 
-# Install Python dependencies
-RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
-    && pip install --no-cache-dir -r requirements-docker.txt
-
-# Copy project files
+# Copy project files (including the 'ff' binary)
 COPY . .
+
+# Ensure 'ff' is executable
+RUN chmod +x ff
 
 # Copy pretrained models from builder stage
 COPY --from=builder /downloads/pretrained_models/ /app/Utils/pretrained_models/
@@ -103,16 +99,14 @@ COPY --from=builder /downloads/pretrained_models/ /app/Utils/pretrained_models/
 # Copy pre-downloaded ai2thor builds from builder stage
 COPY --from=builder /root/.ai2thor/ /root/.ai2thor/
 
-# Copy the compiled FF planner binary from builder stage
-COPY --from=builder /app/bin/ff /usr/local/bin/ff
-RUN chmod +x /usr/local/bin/ff
-
 # Create required directories
 RUN mkdir -p images pddl/problems pddl/outputs Results
 
-# Set environment variables for X11 forwarding
+# Set environment variables
 ENV DISPLAY=:0
 ENV QT_X11_NO_MITSHM=1
+# Use the virtualenv created by uv
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Default command
 CMD ["python", "main.py"]

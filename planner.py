@@ -33,10 +33,17 @@ class Planner:
             self.print_plan()
 
     def run_plan_cbp(self):
-        """Method that executes cbp_roller using argument paths"""
+        """Method that executes ff using argument paths"""
         try:
+            # Select ff path from project root
+            ff_path = os.path.join(os.path.dirname(__file__), "ff")
+            if not os.path.exists(ff_path):
+                raise Exception(
+                    f"FF planner not found at {ff_path}. Please ensure it is present in the project root."
+                )
+
             os.system(
-                f"ff -o {self.domain_path} -f {self.problem_path} > {self.output_path}"
+                f"{ff_path} -o {self.domain_path} -f {self.problem_path} > {self.output_path}"
             )
         except Exception as e:
             raise Exception(f"Error executing planner: {e}\n")

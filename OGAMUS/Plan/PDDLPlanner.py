@@ -34,8 +34,25 @@ class PDDLPlanner:
         # DEBUG
         start = datetime.datetime.now()
 
+        # Select ff path from project root
+        import os
+
+        # Assuming we are running from the root directory of the project
+        ff_path = "./ff"
+        if not os.path.exists(ff_path):
+            # Fallback if not found in current directory (e.g. if run from a subdir)
+            # Try to find it relative to this file
+            ff_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "ff"
+            )
+
+        if not os.path.exists(ff_path):
+            raise Exception(
+                f"FF planner not found. Please ensure it is present in the project root."
+            )
+
         bash_command = (
-            "ff -o OGAMUS/Plan/PDDL/domain.pddl -f OGAMUS/Plan/PDDL/facts.pddl"
+            f"{ff_path} -o OGAMUS/Plan/PDDL/domain.pddl -f OGAMUS/Plan/PDDL/facts.pddl"
         )
 
         process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
