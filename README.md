@@ -9,7 +9,7 @@ There are two ways of running the program:
 
 2. Using OGAMUS algorithm. OGAMUS is an algorithm developed by Leonardo Lamanna, Luciano Serafini, Alessandro Saetti, Alfonso Gerevini y Paolo Traverso which scans an iTHOR scene using pretrained neural network models and stores all the data it gets inside PDDL problem files. In this project the algorithm has been modified so it can run within an specific environment and so that actions can be chained. There is also the possibility to pass a PDDL problem as argument and translate the actions that want to be executed.
 
-### :uv: Local Setup with uv
+### 🚀 Local Setup with uv
 
 This project uses [uv](https://github.com/astral-sh/uv) for dependency management.
 
@@ -100,16 +100,8 @@ iTHOR simulator launches a visualization window every time an environment is gen
 
 - Plans generated in /pddl/outputs/
 
-### :dizzy: Recommended settings
-
-- Run the following command to prevent GNOME from launching the "Application not responds" window. This way the Unity window can be left more time without interruption before executing tasks
-
-```bash
-gsettings set org.gnome.mutter check-alive-timeout 60000
-```
-
 ### :pencil2: References
 
 - iTHOR documentation: https://ai2thor.allenai.org/ithor/documentation/
 - LAMANNA, Leonardo, et al. Online grounding of symbolic planning domains in unknown environments. En Proceedings of the International Conference on Principles of Knowledge Representation and Reasoning. 2022. p. 511-521. [PDF](https://arxiv.org/pdf/2112.10007.pdf). [GitHub](https://github.com/LamannaLeonardo/OGAMUS)
-- [Metric-FF](https://fai.cs.uni-saarland.de/hoffmann/metric-ff.html) planner
+- [tranchis](https://github.com/tranchis/metric-ff-macos) macos compilable version of [Metric-FF](https://fai.cs.uni-saarland.de/hoffmann/metric-ff.html)
