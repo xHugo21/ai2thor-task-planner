@@ -1,5 +1,6 @@
 # File that contains the class which calls the planner
 import os
+from core.config import PROJECT_ROOT
 
 
 class Planner:
@@ -16,9 +17,9 @@ class Planner:
         ogamus=False,
     ):
         # Selects domain depending on the method selected
-        self.domain_path = "./pddl/domain_input.pddl"
+        self.domain_path = os.path.join(PROJECT_ROOT, "pddl/domain_input.pddl")
         if not ogamus:
-            self.domain_path = f"./pddl/domain_{problem}.pddl"
+            self.domain_path = os.path.join(PROJECT_ROOT, f"pddl/domain_{problem}.pddl")
         self.problem_path = problem_path
         self.output_path = output_path
 
@@ -36,7 +37,7 @@ class Planner:
         """Method that executes ff using argument paths"""
         try:
             # Select ff path from project root
-            ff_path = os.path.join(os.path.dirname(__file__), "ff")
+            ff_path = os.path.join(PROJECT_ROOT, "ff")
             if not os.path.exists(ff_path):
                 raise Exception(
                     f"FF planner not found at {ff_path}. Please ensure it is present in the project root."

@@ -1,12 +1,12 @@
 # File that contains the class which translates plans into actions and executes them
 from ai2thor.controller import Controller
-from aux import extractActionImage
+from utils.viz import extract_action_image
 
 
 class ParserPDDLAI2THOR:
     """Class which contains methods needed to translate plans into actions and execute them"""
 
-    def __init__(self, raw_plan, controller, iteracion, liquid):
+    def __init__(self, raw_plan, controller, iteration, liquid):
         self.actions = []
         self.executable_actions = []
         self.controller = controller
@@ -18,7 +18,7 @@ class ParserPDDLAI2THOR:
         print("*EXECUTING PLAN*\n")
 
         # Parse each action
-        self.parse_actions(iteracion, liquid)
+        self.parse_actions(iteration, liquid)
 
         print("*PLAN SUCCESSFULLY EXECUTED*\n")
 
@@ -48,10 +48,10 @@ class ParserPDDLAI2THOR:
                 "WARNING: No actions found in the plan. Check if the planner found a solution."
             )
 
-    def parse_actions(self, iteracion, liquid):
+    def parse_actions(self, iteration, liquid):
         """Method that identifies and executes each line of the plan. It also extracts images of the states"""
         # Extracts an image of the initial state
-        extractActionImage(self.controller.last_event, f"iter{iteracion}_0")
+        extract_action_image(self.controller.last_event, f"iter{iteration}_0")
         n_image = 1
 
         # Find and execute the corresponding action
@@ -136,11 +136,13 @@ class ParserPDDLAI2THOR:
             # If there has been an error -> print via CLI and exit
             if self.controller.last_event.metadata["errorMessage"]:
                 print(f"Error: {self.controller.last_event.metadata['errorMessage']}")
-                print("Reinicie el programa e intente con otra acción\n")
+                print("Restart the program and try with another action\n")
                 exit()
 
             # Extract image of the final state
-            extractActionImage(self.controller.last_event, f"iter{iteracion}_{n_image}")
+            extract_action_image(
+                self.controller.last_event, f"iter{iteration}_{n_image}"
+            )
             n_image += 1
 
     def object_state_action(

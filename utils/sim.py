@@ -1,11 +1,9 @@
-# Auxiliary functions
-# Imports
-from PIL import Image as im
 import os
 import shutil
+from utils.viz import extract_camera_image
 
 
-def printAgentStatus(event):
+def print_agent_status(event):
     """Shows general info and agent status"""
     print("-----------------------------------------------")
     print(f"sceneName: {event.metadata['sceneName']}")
@@ -17,30 +15,27 @@ def printAgentStatus(event):
     print("-----------------------------------------------\n")
 
 
-def isObjectOnScene(event, object):
+def is_object_on_scene(event, object_name):
     """Check if an object is on the scene. Useful for OGAMUS"""
     print("-----------------------------------------------")
     for obj in event.metadata["objects"]:
-        if obj["name"].lower().find(object) != -1:
-            print(f"{object} existe en la escena")
+        if obj["name"].lower().find(object_name) != -1:
+            print(f"{object_name} exists in the scene")
     print("-----------------------------------------------\n")
 
 
-def printObjectStatus(event, object):
+def print_object_status(event, object_meta):
     """Shows full state of an object"""
     print("-----------------------------------------------")
     for obj in event.metadata["objects"]:
-        if obj["objectId"] == object["objectId"]:
+        if obj["objectId"] == object_meta["objectId"]:
             for key, value in obj.items():
-                if (
-                    key != "axisAlignedBoundingBox"
-                    and key != "objectOrientedBoundingBox"
-                ):
+                if key not in ["axisAlignedBoundingBox", "objectOrientedBoundingBox"]:
                     print(f"{key}: {value}")
     print("-----------------------------------------------\n")
 
 
-def printLastActionStatus(event):
+def print_last_action_status(event):
     """Shows info of the last action executed"""
     print("-----------------------------------------------")
     print(f"lastAction: {event.metadata['lastAction']}")
@@ -50,14 +45,8 @@ def printLastActionStatus(event):
     print("-----------------------------------------------\n")
 
 
-def extractActionImage(event, name):
-    """Extracts an image using event"""
-    data = im.fromarray(event.frame)
-    data.save("./images/" + name + ".png")
-
-
-def createCamera(controller):
-    """Creates a camera and calls extractCameraImage() to save an image"""
+def create_camera(controller):
+    """Creates a camera and calls extract_camera_image() to save an image"""
     event = controller.step("Done")
     center = event.metadata["sceneBounds"]["center"]
     center["y"] = event.metadata["sceneBounds"]["cornerPoints"][0][1]
@@ -69,30 +58,24 @@ def createCamera(controller):
         rotation=dict(x=90, y=0, z=0),
         fieldOfView=110,
     )
-    extractCameraImage(event.third_party_camera_frames[0], "scene")
+    extract_camera_image(event.third_party_camera_frames[0], "scene")
 
 
-def extractCameraImage(nparray, name):
-    """Extracts an image using a nparray"""
-    data = im.fromarray(nparray)
-    data.save("./images/" + name + ".png")
-
-
-def removeResultFolders():
+def remove_result_folders():
     """Cleans and ensures existence of result folders mentioned below"""
-    dirs = ["./pddl/problems/", "./pddl/outputs/", "./images/", "./Results/"]
+    dirs = ["./pddl/problems/", "./pddl/outputs/", "./images/", "./results/"]
 
-    for dir in dirs:
-        if not os.path.exists(dir):
-            os.makedirs(dir, exist_ok=True)
+    for dir_path in dirs:
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path, exist_ok=True)
             continue
 
-        for filename in os.listdir(dir):
-            file_path = os.path.join(dir, filename)
+        for filename in os.listdir(dir_path):
+            file_path = os.path.join(dir_path, filename)
             try:
                 if os.path.isfile(file_path) or os.path.islink(file_path):
                     os.unlink(file_path)
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
             except Exception as e:
-                print("Failed to delete %s. Reason: %s" % (file_path, e))
+                print(f"Failed to delete {file_path}. Reason: {e}")

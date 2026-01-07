@@ -12,8 +12,8 @@ import numpy as np
 
 from PIL import Image
 
-import Configuration
-from Utils import Logger
+from core import config as Configuration
+from utils import logger
 
 
 class PathPlanner:
@@ -56,7 +56,7 @@ class PathPlanner:
             grid_debug[(grid_debug==1)] = 255
             grid_debug[(grid_debug==2)] = 180
             grid_debug[start_grid[1]][start_grid[0]] = 100
-            Logger.save_img("topview_grid_noplan.png", grid_debug)
+            logger.save_img("topview_grid_noplan.png", grid_debug)
 
         # Compute plan into resized occupancy grid
         grid_plan = self.bfs(grid, start_grid, goal)
@@ -69,7 +69,7 @@ class PathPlanner:
                 grid_debug[idx_j, idx_i] = 220 # draw plan
                 grid_debug[(grid_debug==2)] = 180 # draw goal position
                 grid_debug[start_grid[1]][start_grid[0]] = 100 # draw agent position
-                Logger.save_img("topview_grid.png", grid_debug)
+                logger.save_img("topview_grid.png", grid_debug)
 
         return plan
 
@@ -129,7 +129,7 @@ class PathPlanner:
             grid_debug[(grid_debug==1)] = 255
             grid_debug[(grid_debug==2)] = 180
             grid_debug[start_grid[1]][start_grid[0]] = 100
-            Logger.save_img("topview_grid_noplan.png", grid_debug)
+            logger.save_img("topview_grid_noplan.png", grid_debug)
 
         # Check if agent position is already a goal one
         if grid[start_grid[1]][start_grid[0]] == 2:
@@ -146,7 +146,7 @@ class PathPlanner:
                 grid_debug[idx_j, idx_i] = 220 # draw plan
                 grid_debug[(grid_debug==2)] = 180 # draw goal position
                 grid_debug[start_grid[1]][start_grid[0]] = 100 # draw agent position
-                Logger.save_img("topview_grid.png", grid_debug)
+                logger.save_img("topview_grid.png", grid_debug)
 
         return plan
 
@@ -191,7 +191,7 @@ class PathPlanner:
             grid_debug[(grid_debug==1)] = 255
             grid_debug[(grid_debug==2)] = 180
             grid_debug[start_grid[1]][start_grid[0]] = 100
-            Logger.save_img("topview_grid_noplan.png", grid_debug)
+            logger.save_img("topview_grid_noplan.png", grid_debug)
 
         # Check if agent position is already a goal one
         if grid[start_grid[1]][start_grid[0]] == 2:
@@ -208,7 +208,7 @@ class PathPlanner:
                 grid_debug[idx_j, idx_i] = 220  # draw plan
                 grid_debug[(grid_debug == 2)] = 180  # draw goal position
                 grid_debug[start_grid[1]][start_grid[0]] = 100  # draw agent position
-                Logger.save_img("topview_grid.png", grid_debug)
+                logger.save_img("topview_grid.png", grid_debug)
 
         return plan
 
@@ -260,7 +260,7 @@ class PathPlanner:
             grid_debug[(grid_debug == 1)] = 255
             grid_debug[(grid_debug == 2)] = 180
             grid_debug[start_grid[1]][start_grid[0]] = 100
-            Logger.save_img("topview_grid_noplan.png", grid_debug)
+            logger.save_img("topview_grid_noplan.png", grid_debug)
 
         # Check if agent position is already a goal one
         if grid[start_grid[1]][start_grid[0]] == 2:
@@ -277,7 +277,7 @@ class PathPlanner:
                 grid_debug[idx_j, idx_i] = 220  # draw plan
                 grid_debug[(grid_debug == 2)] = 180  # draw goal position
                 grid_debug[start_grid[1]][start_grid[0]] = 100  # draw agent position
-                Logger.save_img("topview_grid.png", grid_debug)
+                logger.save_img("topview_grid.png", grid_debug)
 
         return plan
 
@@ -352,22 +352,22 @@ class PathPlanner:
                 relative_angle = 0
             elif plan[i + 1][1] == plan[i][1] - 1 and plan[i + 1][0] == plan[i][0] + 1:
                 if not Configuration.STOCASTIC_AGENT and not Configuration.TASK == Configuration.TASK_OGN_ITHOR:
-                    Logger.write('Warning: when the agent movements and rotations are not stochastic, '
+                    logger.write('Warning: when the agent movements and rotations are not stochastic, '
                                  'the relative angle between two subsequent cells should be a multiple of 90 degrees')
                 relative_angle = 45
             elif plan[i + 1][1] == plan[i][1] - 1 and plan[i + 1][0] == plan[i][0] - 1:
                 if not Configuration.STOCASTIC_AGENT and not Configuration.TASK == Configuration.TASK_OGN_ITHOR:
-                    Logger.write('Warning: when the agent movements and rotations are not stochastic, '
+                    logger.write('Warning: when the agent movements and rotations are not stochastic, '
                                  'the relative angle between two subsequent cells should be a multiple of 90 degrees')
                 relative_angle = 135
             elif plan[i + 1][1] == plan[i][1] + 1 and plan[i + 1][0] == plan[i][0] - 1:
                 if not Configuration.STOCASTIC_AGENT and not Configuration.TASK == Configuration.TASK_OGN_ITHOR:
-                    Logger.write('Warning: when the agent movements and rotations are not stochastic, '
+                    logger.write('Warning: when the agent movements and rotations are not stochastic, '
                                  'the relative angle between two subsequent cells should be a multiple of 90 degrees')
                 relative_angle = 225
             elif plan[i + 1][1] == plan[i][1] + 1 and plan[i + 1][0] == plan[i][0] + 1:
                 if not Configuration.STOCASTIC_AGENT and not Configuration.TASK == Configuration.TASK_OGN_ITHOR:
-                    Logger.write('Warning: when the agent movements and rotations are not stochastic, '
+                    logger.write('Warning: when the agent movements and rotations are not stochastic, '
                                  'the relative angle between two subsequent cells should be a multiple of 90 degrees')
                 relative_angle = 315
 

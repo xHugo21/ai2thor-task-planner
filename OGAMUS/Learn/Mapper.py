@@ -6,9 +6,9 @@
 
 import numpy as np
 
-import Configuration
+from core import config as Configuration
 from OGAMUS.Learn.EnvironmentModels.MapModel import MapModel
-from Utils.depth_util import rotation_from_euler
+from utils.depth_util import rotation_from_euler
 
 
 class Mapper:

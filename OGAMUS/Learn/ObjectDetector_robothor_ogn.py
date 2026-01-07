@@ -5,7 +5,7 @@
 
 
 
-import Configuration
+from core import config as Configuration
 from OGAMUS.Learn.NNModels.FasterRCNN_robothor_ogn import FasterRCNN_robothor_ogn
 
 

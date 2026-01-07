@@ -13,147 +13,12 @@ from collections import defaultdict
 import numpy as np
 from ai2thor.controller import Controller
 
-import Configuration
+from core import config as Configuration
 from OGAMUS.Learn.Learner import Learner
 from OGAMUS.Learn.EnvironmentModels.State import State
 from OGAMUS.Plan.EventPlanner import EventPlanner
-from Utils import Logger, PddlParser
-from Utils.Evaluator import Evaluator
-
-import matplotlib.pyplot as plt
-
-class Agent:
-
-
-    def __init__(self, scene="FloorPlan_Train1_1", position=None, init_rotation=None, init_horizon=None, shortest_path=None, controller=None):
-
-        # Set learner
-        self.learner = Learner()
-
-        # Set event planner
-        self.event_planner = EventPlanner(self.learner.mapper.map_model)
-        
-        if Configuration.TASK == Configuration.TASK_OGN_ROBOTHOR:
-            agent_mode = 'locobot'  # ai2thor 3.3.1
-        else:
-            agent_mode = 'default'
-
-        
-        # hfov = Configuration.FOV / 360. * 2. * np.pi
-        # vfov = 2. * np.arctan(np.tan(hfov / 2) * Configuration.FRAME_HEIGHT / Configuration.FRAME_WIDTH)
-        # vfov = np.rad2deg(vfov)
-# 
-        # if already_on == False:
-        #     if Configuration.TASK == Configuration.TASK_OGN_ROBOTHOR:
-        #         self.controller = Controller(renderDepthImage=Configuration.RENDER_DEPTH_IMG,
-        #                                     renderObjectImage=True,
-        #                                     visibilityDistance=Configuration.VISIBILITY_DISTANCE,
-        #                                     gridSize=Configuration.MOVE_STEP,
-        #                                     rotateStepDegrees=Configuration.ROTATION_STEP,
-        #                                     scene=scene,
-        #                                     # camera properties
-        #                                     width=Configuration.FRAME_WIDTH,
-        #                                     height=Configuration.FRAME_HEIGHT,
-        #                                     fieldOfView=vfov,
-        #                                     continuousMode=True,
-        #                                     snapToGrid=False,
-        #                                     agentMode=agent_mode
-        #                                     )
-        #     elif Configuration.TASK == Configuration.TASK_OGN_ITHOR:
-        #         self.controller = Controller(renderDepthImage=Configuration.RENDER_DEPTH_IMG,
-        #                                     renderObjectImage=True,
-        #                                     visibilityDistance=Configuration.VISIBILITY_DISTANCE,
-        #                                     gridSize=Configuration.MOVE_STEP,
-        #                                     rotateStepDegrees=Configuration.ROTATION_STEP,
-        #                                     scene=scene,
-        #                                     continuousMode=True,
-        #                                     snapToGrid=False,
-        #                                     # camera properties
-        #                                     width=Configuration.FRAME_WIDTH,
-        #                                     height=Configuration.FRAME_HEIGHT,
-        #                                     fieldOfView=vfov,
-        #                                     agentMode=agent_mode
-        #                                     )
-        #     else:
-        #         self.controller = Controller(renderDepthImage=Configuration.RENDER_DEPTH_IMG,
-        #                                     renderObjectImage=True,
-        #                                     visibilityDistance=Configuration.VISIBILITY_DISTANCE,
-        #                                     gridSize=Configuration.MOVE_STEP,
-        #                                     rotateStepDegrees=Configuration.ROTATION_STEP,
-        #                                     scene=scene,
-        #                                     # camera properties
-        #                                     width=Configuration.FRAME_WIDTH,
-        #                                     height=Configuration.FRAME_HEIGHT,
-        #                                     fieldOfView=vfov,
-        #                                     agentMode=agent_mode
-        #                                    )
-        # else:
-        #     self.controller = controller
-        
-
-        self.controller = controller
-
-        # Initialize event (i.e. the observation after action execution)
-        self.event = self.controller.step("Pass")
-
-        #if Configuration.TASK == Configuration.TASK_OGN_ROBOTHOR or Configuration.TASK == Configuration.TASK_OGN_ITHOR:
-        #    self.controller.step(action="MakeAllObjectsStationary")
-
-        if position is not None or init_rotation is not None or init_horizon is not None:
-            assert position is not None and init_rotation is not None and init_horizon is not None, \
-                " If you do not want to use the default initial agent pose, you should set: initial position, " \
-                "rotation and horizon. See Agent.py constructor."
-
-            if agent_mode == 'locobot':
-                self.controller.step(
-                    action="TeleportFull",
-                    position=position,
-                    rotation=dict(x=0, y=init_rotation, z=0),
-                    horizon=init_horizon
-                )
-                Configuration.CAMERA_HEIGHT = 0.8
-            else:
-                self.controller.step(
-                    action="TeleportFull",
-                    position=position,
-                    rotation=dict(x=0, y=init_rotation, z=0),
-                    horizon=init_horizon,
-                    standing=True
-                )
-                Configuration.CAMERA_HEIGHT = 1.5
-
-            self.event = self.controller.step("Pass")
-
-        # Set initial agent angle
-        self.init_angle = self.event.metadata['agent']['rotation']['y']
-
-        # Perceive the environment
-        perceptions = self.perceive()
-
-        # Update agent position in agent state and path planner state
-        self.pos = {"x": int(), "y": int(), "z": int()}
-        self.hand_pos = {"x": int(), "y": int(), "z": int()}
-        self.angle = None
-        # Update agent xyz position
-        self.pos['x'], self.pos['y'], self.pos['z'] = perceptions[0], perceptions[1], perceptions[2]
-        # Update agent xyz hand position
-        self.hand_pos['x'], self.hand_pos['y'], self.hand_pos['z'] = perceptions[3], perceptions[4], perceptions[5]
-        # Update agent y rotation
-        self.angle = int(round(perceptions[6])) % 360
-
-        # Set current iteration
-        self.iter = 0
-
-        # Create initial top view map
-        self.learner.update_topview(os.path.join(Logger.LOG_DIR_PATH, "topview_{}.png".format(self.iter)),
-                                    self.event.depth_frame, self.angle, int(self.event.metadata['agent']['cameraHorizon']), self.pos, collision=True)
-
-        self.last_action_effects = None
-
-        # Initialize initial state
-        self.state = self.create_state(perceptions)
-        self.learner.add_state(self.state)
-
+from utils import logger, pddl_parser
+from utils.evaluator import Evaluator
         # Create evaluator of agent belief state
         self.evaluator = Evaluator()
 
@@ -215,7 +80,7 @@ class Agent:
                 event_action = "Stop"
 
             # DEBUG
-            Logger.write('{}:{}'.format(self.iter + 1, event_action))
+            logger.write('{}:{}'.format(self.iter + 1, event_action))
 
             # Execute the chosen action
             self.event = self.step(event_action)
@@ -224,7 +89,7 @@ class Agent:
 
             # Detect collision when moving forward (and eventually update occupancy map)
             if event_action == "MoveAhead" and not self.event.metadata["lastActionSuccess"]:
-                Logger.write("Collision detected")
+                logger.write("Collision detected")
                 self.update_collision_map(self.angle)
                 self.event_planner.path_plan = None
                 self.event_planner.event_plan = None
@@ -232,7 +97,7 @@ class Agent:
 
             # Detect collision when rotating (and eventually change rotation direction)
             if event_action.startswith("Rotate") and not self.event.metadata["lastActionSuccess"]:
-                Logger.write("Collision detected")
+                logger.write("Collision detected")
                 self.event_planner.path_plan = None
                 self.event_planner.event_plan = None
                 self.event_planner.rotation_collision = True
@@ -252,11 +117,11 @@ class Agent:
                 or event_action.startswith("Open") or event_action.startswith("Close")) \
                     and not self.event.metadata["lastActionSuccess"]) \
                     or (len(self.event_planner.useless_goal_cells) >= Configuration.MAX_USELESS_GOAL_CELLS):
-                Logger.write("NOT successfully executed action: {}".format(self.event_planner.subgoal))
+                logger.write("NOT successfully executed action: {}".format(self.event_planner.subgoal))
 
                 # DEBUG
                 # if len(event_action.split('|')) > 1:
-                    # Logger.write("INFO: Failed {} action on {}. {}".format(event_action.split('|')[0],
+                    # logger.write("INFO: Failed {} action on {}. {}".format(event_action.split('|')[0],
                     #                                                  self.controller.step('GetObjectInFrame',
                     #                                                                       x=event_action.split('|')[1],
                     #                                                                       y=event_action.split('|')[2]).metadata['actionReturn'],
@@ -272,11 +137,11 @@ class Agent:
                 self.event_planner.useless_goal_cells = []
 
                 if 'is not a valid' in self.event.metadata['errorMessage'].lower():
-                    Logger.write('WARNING: the action cannot be executed since the contained object is not a valid'
+                    logger.write('WARNING: the action cannot be executed since the contained object is not a valid'
                                  ' object type for the container one')
 
                 elif 'no valid positions' in self.event.metadata['errorMessage'].lower():
-                    Logger.write('WARNING: the action cannot be executed since there are no valid positions '
+                    logger.write('WARNING: the action cannot be executed since there are no valid positions '
                                  'to place the held object.')
 
             # Look if pddl action has been successfully executed
@@ -284,7 +149,7 @@ class Agent:
                     and len(self.event_planner.event_plan) == 0 and self.event_planner.subgoal is not None:
 
                 # DEBUG
-                Logger.write("Successfully executed action: {}".format(self.event_planner.subgoal))
+                logger.write("Successfully executed action: {}".format(self.event_planner.subgoal))
 
                 # Apply action effects regardless of last observation
                 if Configuration.TRUST_PDDL:
@@ -303,11 +168,11 @@ class Agent:
 
             # Save agent view image
             if Configuration.PRINT_CAMERA_VIEW_IMAGES:
-                Logger.save_img("view_{}.png".format(i), self.event.frame)
+                logger.save_img("view_{}.png".format(i), self.event.frame)
 
             # Save agent depth view image
             if Configuration.PRINT_CAMERA_DEPTH_VIEW_IMAGES:
-                Logger.save_img("depth_view_{}.png".format(i), (self.event.depth_frame/np.max(self.event.depth_frame)*255).astype('uint8'))
+                logger.save_img("depth_view_{}.png".format(i), (self.event.depth_frame/np.max(self.event.depth_frame)*255).astype('uint8'))
 
             # Perceive the environment
             perceptions = self.perceive()
@@ -367,7 +232,7 @@ class Agent:
 
             # Update top view map <==> the agent is in a new state
             if len(candidate_states) == 0 or self.collision:
-                self.learner.update_topview(os.path.join(Logger.LOG_DIR_PATH, "topview_{}.png".format(self.iter)),
+                self.learner.update_topview(os.path.join(logger.LOG_DIR_PATH, "topview_{}.png".format(self.iter)),
                                             self.event.depth_frame, self.angle,
                                             int(self.event.metadata['agent']['cameraHorizon']),
                                             self.pos, collision=self.collision)
@@ -391,13 +256,13 @@ class Agent:
                                                            self.controller)
 
         if self.goal_achieved:
-            Logger.write('Episode succeeds.')
+            logger.write('Episode succeeds.')
         else:
-            Logger.write('Episode fails.')
+            logger.write('Episode fails.')
 
         # DEBUG
         end = datetime.datetime.now()
-        Logger.write("Episode computational time: {} seconds".format((end-start).seconds))
+        logger.write("Episode computational time: {} seconds".format((end-start).seconds))
 
         # Release resources
         # self.controller.stop()
@@ -492,7 +357,7 @@ class Agent:
                     if self.hide_magnitude > 0:
                         debug = self.controller.step("MoveHandUp", moveMagnitude=self.hide_magnitude)
                         if not debug.metadata['lastActionSuccess']:
-                            Logger.write('WARNING: MoveHandUp failed after putting object down. Check step() function'
+                            logger.write('WARNING: MoveHandUp failed after putting object down. Check step() function'
                                          'in Agent.py.')
                     action_result = self.controller.step('Pass')
 
@@ -677,7 +542,7 @@ class Agent:
                    for i, obj in enumerate(action_name.split("(")[1][:-1].strip().lower().split(","))}
 
         # Get operator effects
-        op_effects = PddlParser.get_operator_effects(op_name)
+        op_effects = pddl_parser.get_operator_effects(op_name)
 
         # Update predicates with positive effects
         for pred in [pred for pred in op_effects if not pred.startswith("(not ")]:

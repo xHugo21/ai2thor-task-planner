@@ -6,7 +6,7 @@
 
 import numpy as np
 
-import Configuration
+from core import config as Configuration
 
 
 def pixel_coord_np(width, height):

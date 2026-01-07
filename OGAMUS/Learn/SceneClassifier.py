@@ -9,10 +9,10 @@ from collections import defaultdict
 
 import numpy as np
 
-import Configuration
+from core import config as Configuration
 from OGAMUS.Learn.PredicateClassifiers.OnPredicateClassifier import OnPredicateClassifier
 from OGAMUS.Learn.PredicateClassifiers.OpenPredicateClassifier import OpenPredicateClassifier
-from Utils.util import get1_hot_vector
+from utils.util import get1_hot_vector
 
 
 class SceneClassifier:

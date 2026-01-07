@@ -136,7 +136,7 @@ dmypy.json
 .idea/
 
 # Pretrained neural network models
-Utils/pretrained_models
+utils/pretrained_models
 
 # DS Store
 .DS_Store
