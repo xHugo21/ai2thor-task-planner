@@ -10,7 +10,7 @@ import os
 import matplotlib.pyplot as plt
 from collections import Counter
 
-DIR = "Results/example_test"
+DIR = "results/example_test"
 
 
 def plot_curve(X, Y, xlabel, ylabel, title, file_name):

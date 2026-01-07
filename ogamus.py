@@ -16,73 +16,73 @@ import torch.cuda.random
 
 from core import config as Configuration
 from OGAMUS.Agent import Agent
-from Utils import PddlParser, Logger
+from utils import pddl_parser, logger
 
 
 def main(controller):
     starting_episode = 0
 
-    if not os.path.exists("Utils/pretrained_models"):
+    if not os.path.exists("utils/pretrained_models"):
         print(
             "Please download the neural network models from "
             "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR?usp=sharing , "
             "then move the downloaded models into a directory "
-            'named "pretrained_models", and move the directory "pretrained_models" into the directory "Utils"'
+            'named "pretrained_models", and move the directory "pretrained_models" into the directory "utils"'
         )
-    model_files = os.listdir("Utils/pretrained_models")
+    model_files = os.listdir("utils/pretrained_models")
     if "faster-rcnn_12classes.pth" not in model_files:
         print(
-            'File "faster-rcnn_12classes.pth" not found in "Utils/pretrained_models", please download the neural '
+            'File "faster-rcnn_12classes.pth" not found in "utils/pretrained_models", please download the neural '
             "network models from  "
             "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR?usp=sharing , "
             "then move the downloaded models into a directory "
             'named "pretrained_models", '
-            'and move the directory "pretrained_models" into the directory "Utils"'
+            'and move the directory "pretrained_models" into the directory "utils"'
         )
     elif "faster-rcnn_118classes.pkl" not in model_files:
         print(
-            'File "faster-rcnn_118classes.pkl" not found in "Utils/pretrained_models", please download the neural '
+            'File "faster-rcnn_118classes.pkl" not found in "utils/pretrained_models", please download the neural '
             "network models from  "
             "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR?usp=sharing , "
             "then move the downloaded models into a directory "
             'named "pretrained_models", '
-            'and move the directory "pretrained_models" into the directory "Utils"'
+            'and move the directory "pretrained_models" into the directory "utils"'
         )
     elif "on_predictor.pth" not in model_files:
         print(
-            'File "on_predictor.pth" not found in "Utils/pretrained_models", please download the neural '
+            'File "on_predictor.pth" not found in "utils/pretrained_models", please download the neural '
             "network models from  "
             "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR?usp=sharing , "
             "then move the downloaded models into a directory "
             'named "pretrained_models", '
-            'and move the directory "pretrained_models" into the directory "Utils"'
+            'and move the directory "pretrained_models" into the directory "utils"'
         )
     elif "open_predictor.pth" not in model_files:
         print(
-            'File "open_predictor.pth" not found in "Utils/pretrained_models", please download the neural '
+            'File "open_predictor.pth" not found in "utils/pretrained_models", please download the neural '
             "network models from  "
             "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR?usp=sharing , "
             "then move the downloaded models into a directory "
             'named "pretrained_models", '
-            'and move the directory "pretrained_models" into the directory "Utils"'
+            'and move the directory "pretrained_models" into the directory "utils"'
         )
     elif "obj_classes_coco.pkl" not in model_files:
         print(
-            'File "obj_classes_coco.pkl" not found in "Utils/pretrained_models", please download the neural '
+            'File "obj_classes_coco.pkl" not found in "utils/pretrained_models", please download the neural '
             "network models from  "
             "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR?usp=sharing , "
             "then move the downloaded models into a directory "
             'named "pretrained_models", '
-            'and move the directory "pretrained_models" into the directory "Utils"'
+            'and move the directory "pretrained_models" into the directory "utils"'
         )
     elif "obj_classes_robothor_ogn.pkl" not in model_files:
         print(
-            'File "obj_classes_robothor_ogn.pkl" not found in "Utils/pretrained_models", please download the neural '
+            'File "obj_classes_robothor_ogn.pkl" not found in "utils/pretrained_models", please download the neural '
             "network models from  "
             "https://drive.google.com/drive/folders/1UjADpBeBOMUKXQt-qSULIP3vM90zr_MR?usp=sharing , "
             "then move the downloaded models into a directory "
             'named "pretrained_models", '
-            'and move the directory "pretrained_models" into the directory "Utils"'
+            'and move the directory "pretrained_models" into the directory "utils"'
         )
 
     # Set input arguments
@@ -124,12 +124,12 @@ def main(controller):
 
         if Configuration.TASK == Configuration.TASK_OGN_ROBOTHOR:
             if not Configuration.MAX_ITER != 500:
-                Logger.write(
+                logger.write(
                     "Warning: setting maximum number of steps to 500 according to the "
                     "RoboTHOR object navigation challenge."
                 )
                 Configuration.MAX_ITER = 500
-        Configuration.RESULTS_DIR = "Results/{}_steps{}".format(
+        Configuration.RESULTS_DIR = "results/{}_steps{}".format(
             Configuration.DATASET, Configuration.MAX_ITER
         )
 
@@ -186,15 +186,15 @@ def main(controller):
         goal = episode_data["goal"]
 
         # Create log directories
-        Logger.LOG_DIR_PATH = os.path.join(
+        logger.LOG_DIR_PATH = os.path.join(
             Configuration.RESULTS_DIR,
             "episode_{}".format(len(os.listdir(Configuration.RESULTS_DIR))),
         )
-        os.mkdir(Logger.LOG_DIR_PATH)
-        Logger.LOG_FILE = open(os.path.join(Logger.LOG_DIR_PATH, "log.txt"), "w")
+        os.mkdir(logger.LOG_DIR_PATH)
+        logger.LOG_FILE = open(os.path.join(logger.LOG_DIR_PATH, "log.txt"), "w")
 
         # Randomly generate a goal for the scene
-        PddlParser.set_goal(goal)
+        pddl_parser.set_goal(goal)
 
         if episode in list(range(starting_episode, 5000)):
             # if episode in list(range(starting_episode, starting_episode+1)):
@@ -205,52 +205,52 @@ def main(controller):
 
             if Configuration.TASK == Configuration.TASK_OGN_ROBOTHOR:
                 if Configuration.ROTATION_STEP != 30:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting rotation step to 30 degrees according to Object Goal Navigation standard setting."
                     )
                     Configuration.ROTATION_STEP = 30
                 if Configuration.MAX_CAM_ANGLE != 30:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting maximum camera inclination to 30 degrees since 'Locobot' cannot "
                         "look up or down more than 30 degrees."
                     )
                     Configuration.MAX_CAM_ANGLE = 30
                 if Configuration.FOV != 79:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting field of view to 79 degrees according to Object Goal Navigation standard setting."
                     )
                     Configuration.FOV = 79
                 if Configuration.VISIBILITY_DISTANCE != 1:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting visibility distance to 1 meter according to Object Goal Navigation standard setting."
                     )
                     Configuration.VISIBILITY_DISTANCE = 1
                 if Configuration.MAX_DISTANCE_MANIPULATION != 113:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting max manipulation distance to 113 centimeters for solving the Object Goal "
                         "Navigation task. In this way the agent is more robust to error in object position approximations."
                     )
                     Configuration.MAX_DISTANCE_MANIPULATION = 113
                 if Configuration.CLOSE_TO_OBJ_DISTANCE > 1:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting distance threshold of predicate 'close_to(object)' to 100 centimeters "
                         "for solving the Object Goal Navigation task. "
                         "In this way the agent is more robust to error in object position approximations."
                     )
                     Configuration.CLOSE_TO_OBJ_DISTANCE = 1
                 if not Configuration.STOCASTIC_AGENT:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting agent flag 'stocastic' as True, according to RoboTHOR object navigation challenge."
                     )
                     Configuration.STOCASTIC_AGENT = True
                 if not Configuration.DIAGONAL_MOVE:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting diagonal movements possible in the path planner since running on the "
                         "RoboTHOR object navigation challenge."
                     )
                     Configuration.DIAGONAL_MOVE = True
                 if not Configuration.MAX_ITER != 500:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting maximum number of steps to 500 according to the "
                         "RoboTHOR object navigation challenge."
                     )
@@ -258,34 +258,34 @@ def main(controller):
 
             if Configuration.TASK == Configuration.TASK_OGN_ITHOR:
                 if Configuration.ROTATION_STEP != 45:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting rotation step to 45 degrees according to Object Goal Navigation dataset in iTHOR."
                     )
                     Configuration.ROTATION_STEP = 45
                 if Configuration.MAX_CAM_ANGLE != 60:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting maximum camera inclination to 30 degrees since 'default' robot in "
                         "iTHOR cannot look up or down more than 60 degrees."
                     )
                     Configuration.MAX_CAM_ANGLE = 60
                 if Configuration.FOV != 90:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting field of view to 79 degrees according to Object Goal Navigation standard setting."
                     )
                     Configuration.FOV = 90
                 if Configuration.VISIBILITY_DISTANCE != 1.5:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting visibility distance to 1 meter according to Object Goal Navigation standard setting."
                     )
                     Configuration.VISIBILITY_DISTANCE = 1.5
                 if Configuration.MAX_DISTANCE_MANIPULATION != 140:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting max manipulation distance to 163 (>150) centimeters for solving the Object Goal "
                         "Navigation task in iTHOR. In this way the agent is more robust to error in object position approximations."
                     )
                     Configuration.MAX_DISTANCE_MANIPULATION = 140
                 if Configuration.CLOSE_TO_OBJ_DISTANCE != 1.4:
-                    Logger.write(
+                    logger.write(
                         "Warning: setting distance threshold of predicate 'close_to(object)' to 150 centimeters "
                         "for solving the Object Goal Navigation task in iTHOR. "
                         "In this way the agent is more robust to error in object position approximations."
@@ -293,7 +293,7 @@ def main(controller):
                     Configuration.CLOSE_TO_OBJ_DISTANCE = 1.4
 
             if Configuration.ROTATION_STEP > Configuration.FOV:
-                Logger.write(
+                logger.write(
                     "Warning: agent rotation step ({}) is lower than its field of view ({}). "
                     "Therefore the agent may loop when trying to look at an object which cannot be seen due to"
                     " blind spots. ".format(
@@ -302,7 +302,7 @@ def main(controller):
                 )
 
             # DEBUG
-            Logger.write(
+            logger.write(
                 "############# START CONFIGURATION #############\n"
                 "DATASET:{}\n"
                 "EPISODE:{}\n"
@@ -368,7 +368,7 @@ def main(controller):
         # Copy problem file in result directory
         shutil.copyfile(
             "OGAMUS/Plan/PDDL/facts.pddl",
-            os.path.join(Logger.LOG_DIR_PATH, "facts_{}.pddl".format(scene)),
+            os.path.join(logger.LOG_DIR_PATH, "facts_{}.pddl".format(scene)),
         )
 
     return controller

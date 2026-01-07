@@ -78,11 +78,11 @@ docker run -it --rm \
     -v $(pwd)/images:/app/images \
     -v $(pwd)/pddl/outputs:/app/pddl/outputs \
     -v $(pwd)/pddl/problems:/app/pddl/problems \
-    -v $(pwd)/Results:/app/Results \
+    -v $(pwd)/results:/app/results \
     ai2thor-task-planner:cpu
 ```
 
-### :eyes: Results visualization
+### :eyes: results visualization
 
 iTHOR simulator launches a visualization window every time an environment is generated. However, it is pretty hard to see if everything has executed correctly. The program extracts the following data on each action executed:
 

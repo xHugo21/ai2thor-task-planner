@@ -13,7 +13,7 @@ from ai2thor.controller import Controller
 import numpy as np
 
 from core import config as Configuration
-from Utils import Logger
+from utils import logger
 
 np.random.seed(Configuration.RANDOM_SEED)
 random.seed(Configuration.RANDOM_SEED)
@@ -262,7 +262,7 @@ def goal_predicate_on(scene_name, scene_objects, controller):
 
 
     if not satisfiable_goal:
-        Logger.write('Cannot find a satisfiable goal in PddlParser.py')
+        logger.write('Cannot find a satisfiable goal in pddl_parser.py')
         exit()
 
     goal = '(exists (?o1 - {} ?o2 - {}) (on ?o1 ?o2))'.format(contained_obj['objectType'].lower(),
@@ -294,7 +294,7 @@ def set_goal(goal):
 
 
     # # Copy problem file in result directory
-    # shutil.copyfile("./OGAMUS/Plan/PDDL/facts.pddl", os.path.join(Logger.LOG_DIR_PATH, "facts_{}.pddl".format(scene)))
+    # shutil.copyfile("./OGAMUS/Plan/PDDL/facts.pddl", os.path.join(logger.LOG_DIR_PATH, "facts_{}.pddl".format(scene)))
 
 
 def get_generated_goal_on(scene):

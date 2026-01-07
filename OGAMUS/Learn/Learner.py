@@ -16,7 +16,7 @@ from OGAMUS.Learn.ObjectDetector_robothor_ogn import ObjectDetector_robothor_ogn
 from OGAMUS.Learn.SceneClassifier import SceneClassifier
 import numpy as np
 
-from Utils.depth_util import get_xyz_point_from_depth
+from utils.depth_util import get_xyz_point_from_depth
 
 
 class Learner:

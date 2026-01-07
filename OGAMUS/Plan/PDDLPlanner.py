@@ -8,7 +8,7 @@ import datetime
 import re
 import subprocess
 
-from Utils import Logger
+from utils import logger
 
 
 class PDDLPlanner:
@@ -69,7 +69,7 @@ class PDDLPlanner:
             elif el.__contains__("unknown or empty type"):
                 return None
             elif el.__contains__("unknown constant"):
-                Logger.write(
+                logger.write(
                     "WARNING: unknown constant in pddl problem file. Cannot compute any plan."
                 )
                 return None

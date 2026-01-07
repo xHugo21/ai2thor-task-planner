@@ -129,10 +129,10 @@ DIAGONAL_MOVE = False  # Automatically set to True for object goal navigation
 ##########################################################
 ################# PREDICATE CLASSIFIERS ##################
 ##########################################################
-OBJ_DETECTOR_PATH = "Utils/pretrained_models/faster-rcnn_118classes.pkl"
-OPEN_CLASSIFIER_PATH = "Utils/pretrained_models/open_predictor.pth"
-ON_CLASSIFIER_PATH = "Utils/pretrained_models/on_predictor.pth"
-OBJ_CLASSES_PATH = "Utils/pretrained_models/obj_classes_coco.pkl"
+OBJ_DETECTOR_PATH = "utils/pretrained_models/faster-rcnn_118classes.pkl"
+OPEN_CLASSIFIER_PATH = "utils/pretrained_models/open_predictor.pth"
+ON_CLASSIFIER_PATH = "utils/pretrained_models/on_predictor.pth"
+OBJ_CLASSES_PATH = "utils/pretrained_models/obj_classes_coco.pkl"
 
 
 ##########################################################
@@ -314,8 +314,8 @@ NOT_CONTAINED_OBJS = [
 ##########################################################
 ################## OTHER CONFIGURATION ###################
 ##########################################################
-RESULTS_DIR = "Results/{}_steps{}".format(DATASET, MAX_ITER)
-DATASET_DIR = "Datasets"
+RESULTS_DIR = "results/{}_steps{}".format(DATASET, MAX_ITER)
+DATASET_DIR = "datasets"
 
 # This is set runtime
 GOAL_OBJECTS = []

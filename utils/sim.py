@@ -63,7 +63,7 @@ def create_camera(controller):
 
 def remove_result_folders():
     """Cleans and ensures existence of result folders mentioned below"""
-    dirs = ["./pddl/problems/", "./pddl/outputs/", "./images/", "./Results/"]
+    dirs = ["./pddl/problems/", "./pddl/outputs/", "./images/", "./results/"]
 
     for dir_path in dirs:
         if not os.path.exists(dir_path):

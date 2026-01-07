@@ -18,8 +18,8 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision import transforms
 from matplotlib.cm import cmaps_listed
 color_palette = matplotlib.cm.get_cmap('viridis', 119).colors
-from Utils.torchvision_utils import draw_bounding_boxes
-from Utils import Logger
+from utils.torchvision_utils import draw_bounding_boxes
+from utils import logger
 
 
 class FasterRCNN_robothor_ogn:
@@ -42,14 +42,14 @@ class FasterRCNN_robothor_ogn:
         self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
         # Load pretrained model on custom dataset, if exists
-        path = 'Utils/pretrained_models/faster-rcnn_12classes.pth'
+        path = 'utils/pretrained_models/faster-rcnn_12classes.pth'
         if os.path.exists(path):
             if not torch.cuda.is_available():
                 self.model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
             else:
                 self.model.load_state_dict(torch.load(path))
         else:
-            Logger.write("ERROR: Cannot find object detector model in path {}".format(path))
+            logger.write("ERROR: Cannot find object detector model in path {}".format(path))
             exit()
 
         # move model to the right device
@@ -61,7 +61,7 @@ class FasterRCNN_robothor_ogn:
             transforms.ToTensor()
         ])
 
-        self.categories = ['Background'] + pickle.load(open("Utils/pretrained_models/obj_classes_robothor_ogn.pkl", "rb"))
+        self.categories = ['Background'] + pickle.load(open("utils/pretrained_models/obj_classes_robothor_ogn.pkl", "rb"))
 
 
     def resize_boxes(self, boxes, original_size, new_size):
@@ -122,8 +122,8 @@ class FasterRCNN_robothor_ogn:
                                   if pred['labels'][i].lower().strip() in goal_objs]
 
             pred_img = transforms.ToPILImage()(draw_bounding_boxes(rgb_img_tensor, torch.FloatTensor(printed_pred_boxes), colors=color_labels, labels=print_pred_labels))
-            prev_preds = [img for img in os.listdir(Logger.LOG_DIR_PATH) if img.startswith("pred_")]
-            pred_img.save('{}/pred_{}.jpg'.format(Logger.LOG_DIR_PATH, len(prev_preds)),"JPEG")
+            prev_preds = [img for img in os.listdir(logger.LOG_DIR_PATH) if img.startswith("pred_")]
+            pred_img.save('{}/pred_{}.jpg'.format(logger.LOG_DIR_PATH, len(prev_preds)),"JPEG")
 
         # Return predicted bboxes with labels and scores
         pred['boxes'] = pred['boxes'].cpu().detach().numpy()

@@ -94,13 +94,13 @@ COPY . .
 RUN chmod +x ff
 
 # Copy pretrained models from builder stage
-COPY --from=builder /downloads/pretrained_models/ /app/Utils/pretrained_models/
+COPY --from=builder /downloads/pretrained_models/ /app/utils/pretrained_models/
 
 # Copy pre-downloaded ai2thor builds from builder stage
 COPY --from=builder /root/.ai2thor/ /root/.ai2thor/
 
 # Create required directories
-RUN mkdir -p images pddl/problems pddl/outputs Results
+RUN mkdir -p images pddl/problems pddl/outputs results
 
 # Set environment variables
 ENV DISPLAY=:0

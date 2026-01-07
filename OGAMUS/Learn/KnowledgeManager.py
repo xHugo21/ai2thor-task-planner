@@ -8,7 +8,7 @@ import copy
 from collections import defaultdict
 
 from core import config as Configuration
-from Utils import PddlParser
+from utils import pddl_parser
 import numpy as np
 
 
@@ -205,7 +205,7 @@ class KnowledgeManager:
 
 
     def update_pddl_state(self):
-        PddlParser.update_pddl_state(self.all_objects, self.all_predicates,
+        pddl_parser.update_pddl_state(self.all_objects, self.all_predicates,
                                      self.objects_counting, self.objects_avg_score)
 
 

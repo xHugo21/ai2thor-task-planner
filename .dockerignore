@@ -32,10 +32,10 @@ ENV/
 images/
 pddl/outputs/
 pddl/problems/
-Results/
+results/
 
 # Pretrained models (downloaded during build)
-Utils/pretrained_models/
+utils/pretrained_models/
 
 # OS files
 .DS_Store

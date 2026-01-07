@@ -15,8 +15,8 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision import transforms
 
 from core import config as Configuration
-from Utils import Logger
-from Utils.torchvision_utils import draw_bounding_boxes
+from utils import logger
+from utils.torchvision_utils import draw_bounding_boxes
 
 import numpy as np
 import matplotlib
@@ -59,7 +59,7 @@ class FasterRCNN:
             transforms.ToTensor()
         ])
 
-        self.categories = ['Background'] + pickle.load(open("Utils/pretrained_models/obj_classes_coco.pkl", "rb"))
+        self.categories = ['Background'] + pickle.load(open("utils/pretrained_models/obj_classes_coco.pkl", "rb"))
 
 
     def resize_boxes(self, boxes, original_size, new_size):
@@ -121,8 +121,8 @@ class FasterRCNN:
                                   if pred['labels'][i].lower().strip() in goal_objs]
 
             pred_img = transforms.ToPILImage()(draw_bounding_boxes(rgb_img_tensor, torch.FloatTensor(printed_pred_boxes), colors=color_labels, labels=print_pred_labels))
-            prev_preds = [img for img in os.listdir(Logger.LOG_DIR_PATH) if img.startswith("pred_")]
-            pred_img.save('{}/pred_{}.jpg'.format(Logger.LOG_DIR_PATH, len(prev_preds)),"JPEG")
+            prev_preds = [img for img in os.listdir(logger.LOG_DIR_PATH) if img.startswith("pred_")]
+            pred_img.save('{}/pred_{}.jpg'.format(logger.LOG_DIR_PATH, len(prev_preds)),"JPEG")
 
         # Return predicted bboxes with labels and scores
         pred['boxes'] = pred['boxes'].cpu().detach().numpy()

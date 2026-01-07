@@ -12,7 +12,7 @@ import numpy as np
 from core import config as Configuration
 from OGAMUS.Plan.PathPlanner import PathPlanner
 from OGAMUS.Plan.PDDLPlanner import PDDLPlanner
-from Utils import Logger
+from utils import logger
 
 
 class EventPlanner:
@@ -81,7 +81,7 @@ class EventPlanner:
 
             if self.subgoal is None or self.subgoal != self.pddl_plan[0]:
                 self.subgoal = self.pddl_plan.pop(0)
-                Logger.write('Changing event planner subgoal to: {}'.format(self.subgoal))
+                logger.write('Changing event planner subgoal to: {}'.format(self.subgoal))
                 self.event_plan = None
                 self.useless_goal_cells = []
 
@@ -92,7 +92,7 @@ class EventPlanner:
                 self.event_plan = None
                 self.useless_goal_cells = []
                 self.subgoal = self.pddl_plan.pop(0)
-                Logger.write('Changing event planner subgoal to: {}'.format(self.subgoal))
+                logger.write('Changing event planner subgoal to: {}'.format(self.subgoal))
                 action = self.event_planning(fsm_model)
 
         return action
@@ -140,7 +140,7 @@ class EventPlanner:
                 break
 
         if self.path_plan is None and self.agent_is_blocked(agent_pos):
-            Logger.write('Warning: agent is blocked, clearing the area around the agent.')
+            logger.write('Warning: agent is blocked, clearing the area around the agent.')
             self.free_agent_area(agent_pos)
             return 'RotateRight'
 
@@ -221,7 +221,7 @@ class EventPlanner:
                                                      if obj['distance'] < Configuration.CLOSE_TO_OBJ_DISTANCE]]
 
         if len(goal_object_states) == 0:
-            Logger.write('WARNING: there are no states where the goal object is within the manipulation '
+            logger.write('WARNING: there are no states where the goal object is within the manipulation '
                          'distance of {} meters.'.format(Configuration.CLOSE_TO_OBJ_DISTANCE))
             return
 
@@ -250,7 +250,7 @@ class EventPlanner:
                 del goal_object_states_distances[goal_state_index]
 
         if not feasible_goal:
-            Logger.write('WARNING: There are no feasible states to reach within a distance of 1.5 meters from the goal'
+            logger.write('WARNING: There are no feasible states to reach within a distance of 1.5 meters from the goal'
                          'object. Probably the agent is holding an object which collides and obstacles the path,'
                          'or (unlikely) the goal object position has been updated and moved to a collision grid cell.')
             return
@@ -369,7 +369,7 @@ class EventPlanner:
                 if self.goal_pose is not None:
                     pass
                 else:
-                    Logger.write('Warning: the goal object has already been inspected, but the inspection state cannot '
+                    logger.write('Warning: the goal object has already been inspected, but the inspection state cannot '
                                  'be reached. It is likely that the agent holds an object which collides during the path')
                     self.useless_goal_cells = list(range(Configuration.MAX_USELESS_GOAL_CELLS))
                     agent_x = self.perceptions[0]
@@ -437,7 +437,7 @@ class EventPlanner:
                         agent2obj_angle -= Configuration.ROTATION_STEP
 
                 if agent2obj_z_angle is None:
-                    Logger.write('Warning: agent-object angle in xz is None, check GET_CLOSE_AND_LOOK_AT in EventPlanner.py')
+                    logger.write('Warning: agent-object angle in xz is None, check GET_CLOSE_AND_LOOK_AT in EventPlanner.py')
                 if agent2obj_z_angle is not None and agent2obj_z_angle > 0:
                     [self.event_plan.append('LookUp') for _ in range(agent2obj_z_angle // 30)] # assume 30 degrees of lookup
                 elif agent2obj_z_angle is not None and agent2obj_z_angle < 0:
@@ -552,7 +552,7 @@ class EventPlanner:
                 if len(goal_object_states) == 0:
                     self.event_plan = None
                     self.useless_goal_cells.append((start_grid[1], start_grid[0]))
-                    Logger.write('Adding a useless goal cell: {}'.format(len(self.useless_goal_cells)))
+                    logger.write('Adding a useless goal cell: {}'.format(len(self.useless_goal_cells)))
                     self.inspect()
 
                     # Check if goal object inspection is feasible
@@ -763,7 +763,7 @@ class EventPlanner:
         self.event_plan = self.path_planner.path_planning_greedy_inspect(start_position, goal_position,
                                                                          non_goal_grid_cells=self.useless_goal_cells)
         if self.event_plan is None:
-            Logger.write('WARNING: goal object is not reachable, deleting it from the agent knowledge.')
+            logger.write('WARNING: goal object is not reachable, deleting it from the agent knowledge.')
             return
 
         # Append a fictitious action to see last event plan action results before confirming subgoal success
@@ -779,7 +779,7 @@ class EventPlanner:
         if len(self.event_plan) == 1:
 
             if not 'fictitious action' in self.event_plan:
-                Logger.write('ERROR: look at inspect() in EventPlanner.py')
+                logger.write('ERROR: look at inspect() in EventPlanner.py')
                 exit()
             self.event_plan = []
 

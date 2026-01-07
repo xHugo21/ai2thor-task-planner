@@ -23,8 +23,8 @@ from utils.sim import (
 from utils.viz import extract_action_image
 
 # CONSTANTS
-DATASET = "Datasets/test_set_ogn_ithor.json"
-LOG = "Results/test_set_ogn_ithor_steps200/episode_0/log.txt"
+DATASET = "datasets/test_set_ogn_ithor.json"
+LOG = "results/test_set_ogn_ithor_steps200/episode_0/log.txt"
 
 # MAIN FLOW OF THE PROGRAM
 
